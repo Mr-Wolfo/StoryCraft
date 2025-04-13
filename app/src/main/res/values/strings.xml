@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">StoryCraft</string>
+    <string name="screen_title_story_reader">Прохождение</string>
+    <string name="screen_title_story_editor">Редактор</string>
+    <string name="screen_title_story_list">Истории</string>
+    <string name="screen_title_profile">Профиль</string>
+</resources>
