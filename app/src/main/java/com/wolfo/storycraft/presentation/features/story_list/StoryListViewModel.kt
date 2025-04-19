@@ -1,9 +1,11 @@
-package com.wolfo.storycraft.presentation.features.storylist
+package com.wolfo.storycraft.presentation.features.story_list
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wolfo.storycraft.domain.model.StoryBase
-import com.wolfo.storycraft.domain.usecase.GetStoriesUseCase
+import com.wolfo.storycraft.domain.usecase.ObserveStoriesUseCase
+import com.wolfo.storycraft.domain.usecase.RefreshStoriesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +21,8 @@ data class StoryListUiState(
 )
 
 class StoryListViewModel(
-    private val getStoriesUseCase: GetStoriesUseCase
+    private val observeStoriesUseCase: ObserveStoriesUseCase,
+    private val refreshStoriesUseCase: RefreshStoriesUseCase
 ): ViewModel() {
     private val _uiState = MutableStateFlow(StoryListUiState(isLoading = true))
     val uiState: StateFlow<StoryListUiState> = _uiState.asStateFlow()
@@ -28,13 +31,19 @@ class StoryListViewModel(
         loadStoriesCatalog()
     }
 
-    fun updateStoriesCatalog() {
-        loadStoriesCatalog()
+    fun refreshStoriesCatalog() {
+        viewModelScope.launch {
+            try {
+                refreshStoriesUseCase()
+            } catch (e: Exception) {
+                Log.e("StoryList", "RefreshError: $e")
+            }
+        }
     }
 
     private fun loadStoriesCatalog() {
         viewModelScope.launch {
-            getStoriesUseCase()
+            observeStoriesUseCase()
                 .onStart { _uiState.update { it.copy(isLoading = true, error = null) } }
                 .catch { throwable ->
                     _uiState.update { it.copy(isLoading = false, error = throwable.message ?: "Unknown error") }

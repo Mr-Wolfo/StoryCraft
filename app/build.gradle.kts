@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.devtools.kspr)
 }
 
 android {
@@ -52,7 +53,10 @@ android {
 dependencies {
     implementation(project(path = ":data"))
     implementation(project(path = ":domain"))
-
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.okhttp)
     implementation(libs.converter.gson)
     implementation(libs.retrofit2.retrofit)

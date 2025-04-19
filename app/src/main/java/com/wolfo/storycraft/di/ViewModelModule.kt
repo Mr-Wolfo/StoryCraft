@@ -1,21 +1,23 @@
 package com.wolfo.storycraft.di
 
-import com.wolfo.storycraft.presentation.features.storyeditor.StoryGraphViewModel
-import com.wolfo.storycraft.presentation.features.storylist.StoryListViewModel
-import com.wolfo.storycraft.presentation.features.storyreader.StoryReaderViewModel
+import com.wolfo.storycraft.presentation.features.story_list.StoryListViewModel
+import com.wolfo.storycraft.presentation.features.story_view.details.StoryDetailsViewModel
+import com.wolfo.storycraft.presentation.features.story_view.reader.StoryReaderViewModel
 import org.koin.core.module.dsl.viewModel
-import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val viewModelModule = module {
 
 //    viewModelOf(::StoryListViewModel)
     viewModel<StoryListViewModel> {
-        StoryListViewModel(getStoriesUseCase = get())
+        StoryListViewModel(get(), get())
     }
 
     viewModel<StoryReaderViewModel> {
-        StoryReaderViewModel(get(), get())
+        StoryReaderViewModel(get())
+    }
+    viewModel<StoryDetailsViewModel> {
+        StoryDetailsViewModel(get(), get(), get())
     }
 
 }

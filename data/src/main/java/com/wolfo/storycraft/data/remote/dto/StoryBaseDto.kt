@@ -18,6 +18,7 @@ data class StoryBaseDto(
     @SerializedName("cover_image_url")
     val coverImageUrl: String? = null,
     @SerializedName("is_published")
-    val isPublished: Boolean
-//    val averageRating: Float? = null
+    val isPublished: Boolean,
+    @SerializedName("average_rating")
+    val averageRating: Float? = null
 )

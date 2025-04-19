@@ -1,4 +1,4 @@
-package com.wolfo.storycraft.presentation.features.storyeditor
+package com.wolfo.storycraft.presentation.features.story_editor
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.lang.System.out
 
 
 // Placeholder для ваших Use Cases и Repository

@@ -1,5 +1,6 @@
 package com.wolfo.storycraft.data.mapper
 
+import com.wolfo.storycraft.data.local.db.entity.StoryEntity
 import com.wolfo.storycraft.data.remote.dto.ChoiceDto
 import com.wolfo.storycraft.data.remote.dto.PageDto
 import com.wolfo.storycraft.data.remote.dto.StoryBaseDto
@@ -50,5 +51,31 @@ fun ChoiceDto.toDomain(): Choice {
         pageId = this.pageId,
         choiceText = this.choiceText,
         targetPageId = this.targetPageId
+    )
+}
+
+fun StoryEntity.toDomain(): StoryBase {
+    return StoryBase(
+        id = this.id,
+        title = this.title,
+        description = this.description ?: "Empty",
+        authorId = this.authorId ?: -1L,
+        tags = null,
+        averageRating = this.averageRating
+    )
+}
+
+fun StoryBaseDto.toEntity(): StoryEntity {
+    return StoryEntity(
+        id = this.id,
+        title = this.title,
+        description = this.description ?: "Empty",
+        authorId = this.authorId,
+        authorName = "Test",
+//        tags = this.tags,
+        averageRating = this.averageRating,
+        startPageId = this.startPageId,
+        coverImageUrl = this.coverImageUrl,
+        isPublished = this.isPublished
     )
 }

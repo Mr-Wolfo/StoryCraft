@@ -1,4 +1,4 @@
-package com.wolfo.storycraft.presentation.features.storyeditor
+package com.wolfo.storycraft.presentation.features.story_editor
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -8,7 +8,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.input.pointer.pointerInput
@@ -22,10 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
-import androidx.navigation.NavController
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

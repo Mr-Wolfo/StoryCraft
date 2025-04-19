@@ -10,5 +10,4 @@ data class Story(
     val coverImageUrl: String?,
     val isPublished: Boolean,
     val pages: List<Page>
-//    val averageRating: Float? = null
 )

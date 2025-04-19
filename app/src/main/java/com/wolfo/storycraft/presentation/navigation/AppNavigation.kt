@@ -3,7 +3,6 @@ package com.wolfo.storycraft.presentation.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -15,11 +14,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.wolfo.storycraft.presentation.features.profile.ProfileScreen
-import com.wolfo.storycraft.presentation.features.storyeditor.StoryEditorScreen
-import com.wolfo.storycraft.presentation.features.storylist.StoryListScreen
-import com.wolfo.storycraft.presentation.features.storyreader.StoryDetails
-import com.wolfo.storycraft.presentation.features.storyreader.StoryDetailsScreen
-import com.wolfo.storycraft.presentation.features.storyreader.StoryReaderScreen
+import com.wolfo.storycraft.presentation.features.story_editor.StoryEditorScreen
+import com.wolfo.storycraft.presentation.features.story_list.StoryListScreen
+import com.wolfo.storycraft.presentation.features.story_view.details.StoryDetailsScreen
+import com.wolfo.storycraft.presentation.features.story_view.reader.StoryReaderScreen
 
 @Composable
 fun AppNavigation()

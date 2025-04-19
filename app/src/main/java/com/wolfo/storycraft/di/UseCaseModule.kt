@@ -1,15 +1,26 @@
 package com.wolfo.storycraft.di
 
-import com.wolfo.storycraft.domain.usecase.GetStoriesUseCase
-import com.wolfo.storycraft.domain.usecase.GetStoryFullUseCase
-import com.wolfo.storycraft.presentation.features.storyeditor.GetStoryGraphDataUseCase
+import com.wolfo.storycraft.domain.usecase.LoadStoryFullByIdUseCase
+import com.wolfo.storycraft.domain.usecase.ObserveStoriesUseCase
+import com.wolfo.storycraft.domain.usecase.ObserveStoryBaseByIdUseCase
+import com.wolfo.storycraft.domain.usecase.ObserveStoryFullByIdUseCase
+import com.wolfo.storycraft.domain.usecase.RefreshStoriesUseCase
 import org.koin.dsl.module
 
 val useCaseModule = module {
-    factory<GetStoriesUseCase> {
-        GetStoriesUseCase(get())
+    factory<ObserveStoriesUseCase> {
+        ObserveStoriesUseCase(get())
     }
-    factory<GetStoryFullUseCase> {
-        GetStoryFullUseCase(get())
+    factory<LoadStoryFullByIdUseCase> {
+        LoadStoryFullByIdUseCase(get())
+    }
+    factory<RefreshStoriesUseCase> {
+        RefreshStoriesUseCase(get())
+    }
+    factory<ObserveStoryBaseByIdUseCase> {
+        ObserveStoryBaseByIdUseCase(get())
+    }
+    factory<ObserveStoryFullByIdUseCase> {
+        ObserveStoryFullByIdUseCase(get())
     }
 }
