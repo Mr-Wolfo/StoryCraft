@@ -1,14 +1,21 @@
 package com.wolfo.storycraft.data.mapper
 
 import com.wolfo.storycraft.data.local.db.entity.StoryEntity
+import com.wolfo.storycraft.data.local.db.entity.UserEntity
+import com.wolfo.storycraft.data.remote.dto.AuthRequestDto
 import com.wolfo.storycraft.data.remote.dto.ChoiceDto
 import com.wolfo.storycraft.data.remote.dto.PageDto
+import com.wolfo.storycraft.data.remote.dto.RegisterRequestDto
 import com.wolfo.storycraft.data.remote.dto.StoryBaseDto
 import com.wolfo.storycraft.data.remote.dto.StoryDto
+import com.wolfo.storycraft.data.remote.dto.UserDto
+import com.wolfo.storycraft.domain.model.AuthRequest
 import com.wolfo.storycraft.domain.model.Choice
 import com.wolfo.storycraft.domain.model.Page
+import com.wolfo.storycraft.domain.model.RegisterRequest
 import com.wolfo.storycraft.domain.model.Story
 import com.wolfo.storycraft.domain.model.StoryBase
+import com.wolfo.storycraft.domain.model.User
 
 fun StoryBaseDto.toDomain(): StoryBase {
     return StoryBase(
@@ -77,5 +84,36 @@ fun StoryBaseDto.toEntity(): StoryEntity {
         startPageId = this.startPageId,
         coverImageUrl = this.coverImageUrl,
         isPublished = this.isPublished
+    )
+}
+
+fun RegisterRequest.toDto(): RegisterRequestDto {
+    return RegisterRequestDto(
+        name = this.name,
+        email = this.email,
+        password = this.password
+    )
+}
+
+fun AuthRequest.toDto(): AuthRequestDto {
+    return AuthRequestDto(
+        email = this.email,
+        password = this.password
+    )
+}
+
+fun UserDto.toEntity(): UserEntity {
+    return UserEntity(
+        id = this.id,
+        name = this.name,
+        email = this.email
+    )
+}
+
+fun UserEntity.toDomain(): User {
+    return User(
+        id = this.id,
+        name = this.name,
+        email = this.email
     )
 }

@@ -20,6 +20,7 @@ data class StoryDto(
     @SerializedName("is_published")
     val isPublished: Boolean,
     @SerializedName("pages")
-    val pages: List<PageDto>
-//    val averageRating: Float? = null
+    val pages: List<PageDto>,
+    @SerializedName("average_rating")
+    val averageRating: Float? = null
 )

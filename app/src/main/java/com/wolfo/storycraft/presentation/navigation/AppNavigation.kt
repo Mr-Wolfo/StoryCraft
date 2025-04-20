@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.wolfo.storycraft.presentation.features.profile.ProfileScreen
+import com.wolfo.storycraft.presentation.features.profile.register.RegisterScreen
 import com.wolfo.storycraft.presentation.features.story_editor.StoryEditorScreen
 import com.wolfo.storycraft.presentation.features.story_list.StoryListScreen
 import com.wolfo.storycraft.presentation.features.story_view.details.StoryDetailsScreen
@@ -57,7 +58,7 @@ fun AppNavigation()
                 StoryEditorScreen(storyId = storyEditor.storyId)
             }
             composable<Screen.Profile> {
-                ProfileScreen()
+                RegisterScreen()
             }
         }
     }

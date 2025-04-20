@@ -5,6 +5,7 @@ import com.wolfo.storycraft.domain.usecase.ObserveStoriesUseCase
 import com.wolfo.storycraft.domain.usecase.ObserveStoryBaseByIdUseCase
 import com.wolfo.storycraft.domain.usecase.ObserveStoryFullByIdUseCase
 import com.wolfo.storycraft.domain.usecase.RefreshStoriesUseCase
+import com.wolfo.storycraft.domain.usecase.RegisterUseCase
 import org.koin.dsl.module
 
 val useCaseModule = module {
@@ -22,5 +23,8 @@ val useCaseModule = module {
     }
     factory<ObserveStoryFullByIdUseCase> {
         ObserveStoryFullByIdUseCase(get())
+    }
+    factory<RegisterUseCase> {
+        RegisterUseCase(get())
     }
 }

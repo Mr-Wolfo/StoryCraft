@@ -23,6 +23,8 @@ sealed class Screen(
         data class Reader(val storyId: Long) : Screen()
     }
 
+    @Serializable
+    data object Auth : Screen()
 
     @Serializable
     data class StoryEditor(val storyId: Long?) : Screen()
