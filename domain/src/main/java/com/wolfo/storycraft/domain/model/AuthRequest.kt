@@ -1,6 +1,6 @@
 package com.wolfo.storycraft.domain.model
 
 data class AuthRequest(
-    val email: String,
+    val name: String,
     val password: String
 )

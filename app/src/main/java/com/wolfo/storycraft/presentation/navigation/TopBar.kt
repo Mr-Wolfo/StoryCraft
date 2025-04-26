@@ -8,7 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.wolfo.storycraft.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -4,6 +4,7 @@ data class Page(
     val id: Long,
     val storyId: Long,
     val pageText: String,
+    val coverImageUrl: String?,
     val isEndingPage: Boolean,
     val choices: List<Choice>
 )

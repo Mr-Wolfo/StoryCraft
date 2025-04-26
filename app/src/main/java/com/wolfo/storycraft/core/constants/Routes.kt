@@ -12,22 +12,22 @@ object Routes
 {
     val routeList = listOf(
         TopLevelRoute(
-            name = "StoryList",
+            name = "Истории",
             route = Screen.StoryList,
             icon = Icons.Filled.Menu
         ),
         TopLevelRoute(
-            name = "StoryView",
+            name = "Прохождение",
             route = Screen.StoryView,
             icon = Icons.Filled.PlayArrow
         ),
         TopLevelRoute(
-            name = "StoryEditor",
+            name = "Редактор",
             route = Screen.StoryEditor(null),
             icon = Icons.Filled.Add
         ),
         TopLevelRoute(
-            name = "Profile",
+            name = "Профиль",
             route = Screen.Profile,
             icon = Icons.Filled.Face
         )

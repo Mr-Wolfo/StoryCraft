@@ -3,9 +3,9 @@ package com.wolfo.storycraft.data.repository
 import android.util.Log
 import com.wolfo.storycraft.data.local.db.LocalDataSource
 import com.wolfo.storycraft.data.mapper.toDomain
+import com.wolfo.storycraft.data.mapper.toEntities
 import com.wolfo.storycraft.data.mapper.toEntity
 import com.wolfo.storycraft.data.remote.RemoteDataSource
-import com.wolfo.storycraft.data.remote.dto.StoryDto
 import com.wolfo.storycraft.data.utils.BaseApiResponse
 import com.wolfo.storycraft.data.utils.NetworkResult
 import com.wolfo.storycraft.domain.model.Story
@@ -53,7 +53,19 @@ class StoryRepositoryImpl(
     }
 
     override suspend fun observeStoryFull(storyId: Long): Flow<Story> = flow {
-        TODO("Not yet implemented")
+        val localDataFlow = localDataSource.observeStoryFull(storyId = storyId).map { it?.toDomain() }
+
+        var isFirstEmission = true
+
+        localDataFlow.collect { story ->
+
+            story?.let { emit(story) }
+
+            if (isFirstEmission) {
+                isFirstEmission = false
+                loadStoryFull(storyId)
+            }
+        }
     }
 
     // override suspend fun loadStoryBase() {}
@@ -62,6 +74,7 @@ class StoryRepositoryImpl(
         val localDataFlow = localDataSource.observeStoryBase(storyId = storyId).map { it.toDomain() }
 
         localDataFlow.collect {
+
             emit(it)
         }
 
@@ -72,10 +85,15 @@ class StoryRepositoryImpl(
         val result = safeApiCall { remoteDataSource.getStoryFull(storyId) }
         when(result) {
             is NetworkResult.Success -> {
-                Log.d("Data", "${result.data?.description}")
-                /*localDataSource.insertStory(result.data?.toEntity,
-                    result.data.pages.toEntity,
-                    result.data.pages.map { it.choices.toEntity })*/
+                result.data?.let { storyDto ->
+                    val (storyEntity, pageEntities, choiceEntities) = storyDto.toEntities()
+                    Log.d("Get", "DESTRUCTED")
+                    localDataSource.insertStory(
+                        story = storyEntity,
+                        pages = pageEntities,
+                        choices = choiceEntities
+                    )
+                }
             }
 
             is NetworkResult.Error -> {

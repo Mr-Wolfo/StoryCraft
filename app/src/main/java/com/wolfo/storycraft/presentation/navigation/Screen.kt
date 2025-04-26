@@ -1,11 +1,6 @@
 package com.wolfo.storycraft.presentation.navigation
 
-import androidx.annotation.StringRes
-import com.wolfo.storycraft.R
-import com.wolfo.storycraft.domain.model.Story
-import com.wolfo.storycraft.presentation.navigation.Screen.*
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KClass
 
 @Serializable
 sealed class Screen(
@@ -24,12 +19,23 @@ sealed class Screen(
     }
 
     @Serializable
-    data object Auth : Screen()
+    data class StoryEditor(val storyId: Long?) : Screen()
 
     @Serializable
-    data class StoryEditor(val storyId: Long?) : Screen()
-    @Serializable
-    data object Profile : Screen()
+    data object Profile : Screen() {
+
+        @Serializable
+        data object Profile : Screen()
+
+        @Serializable
+        data object Auth : Screen()
+
+        @Serializable
+        data object Login : Screen()
+
+        @Serializable
+        data object Register : Screen()
+    }
 }
 
 /*

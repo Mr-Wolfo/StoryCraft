@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 
 class AuthFormViewModel: ViewModel() {
-    val loginEmail = mutableStateOf("")
+    val loginName = mutableStateOf("")
     val loginPassword = mutableStateOf("")
 
     val registerName = mutableStateOf("")

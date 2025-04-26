@@ -53,6 +53,7 @@ android {
 dependencies {
     implementation(project(path = ":data"))
     implementation(project(path = ":domain"))
+    implementation(libs.accompanist.systemuicontroller)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.room.runtime)

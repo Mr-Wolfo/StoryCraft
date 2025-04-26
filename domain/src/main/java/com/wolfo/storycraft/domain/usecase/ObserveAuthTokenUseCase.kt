@@ -1,13 +1,12 @@
 package com.wolfo.storycraft.domain.usecase
 
-import com.wolfo.storycraft.domain.model.User
 import com.wolfo.storycraft.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 
-class ObserveUserProfileUseCase(
+class ObserveAuthTokenUseCase(
     private val userRepository: UserRepository
 ) {
-    operator fun invoke(): Flow<User> {
-        return userRepository.observeProfile()
+    operator fun invoke(): Flow<Boolean> {
+        return userRepository.observeAuthToken()
     }
 }

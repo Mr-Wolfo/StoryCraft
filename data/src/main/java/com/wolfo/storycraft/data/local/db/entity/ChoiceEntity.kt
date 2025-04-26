@@ -12,13 +12,7 @@ import androidx.room.PrimaryKey
         parentColumns = ["id"],
         childColumns = ["pageId"],
         onDelete = ForeignKey.CASCADE
-    ),
-        ForeignKey(
-            entity = PageEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["targetPageId"],
-            onDelete = ForeignKey.SET_NULL
-        )],
+    )],
     indices = [Index(value = ["pageId"]), Index(value = ["targetPageId"])]
 )
 data class ChoiceEntity(

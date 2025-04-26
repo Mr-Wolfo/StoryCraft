@@ -41,15 +41,21 @@ class StoryDetailsViewModel(
     val storyId: Long get() = _storyId ?: -1L
 
     init {
-        Log.d("StoryDetailsVM", "Current storyId: $_storyId, SavedStateHandle: ${savedStateHandle.get<Long>("storyId")}")
+        Log.d(
+            "StoryDetailsVM",
+            "Current storyId: $_storyId, SavedStateHandle: ${savedStateHandle.get<Long>("storyId")}"
+        )
 //        Log.d("load", "Current storyId: $_storyId, SavedStateHandle: ${savedStateHandle.get<Long>("storyId")}")
 
-         savedStateHandle["storyId"] = _storyId
+        savedStateHandle["storyId"] = _storyId
         _storyId?.let { observeStoryBaseByIdCatalog(it) }
     }
 
     fun attemptLoadStory() {
-        Log.d("StoryDetailsVM", "Current storyId: $_storyId, SavedStateHandle: ${savedStateHandle.get<Long>("storyId")}")
+        Log.d(
+            "StoryDetailsVM",
+            "Current storyId: $_storyId, SavedStateHandle: ${savedStateHandle.get<Long>("storyId")}"
+        )
         savedStateHandle["storyId"] = _storyId
         _storyId?.let { observeStoryBaseByIdCatalog(storyId) }
     }
@@ -59,7 +65,12 @@ class StoryDetailsViewModel(
             observeStoryBaseByIdUseCase(storyId = storyId)
                 .onStart { _uiState.update { it.copy(isLoading = true, error = null) } }
                 .catch { throwable ->
-                    _uiState.update { it.copy(isLoading = false, error = throwable.message ?: "Unknown error") }
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = throwable.message ?: "Unknown error"
+                        )
+                    }
                 }
                 .collect { storyBase ->
                     _uiState.update { it.copy(isLoading = false, story = storyBase) }
@@ -68,33 +79,23 @@ class StoryDetailsViewModel(
     }
 
     fun loadStoryFullById() {
+        if (storyId == -1L) {
+            _loadFullUiState.update { it.copy(error = "Invalid story ID") }
+            return
+        }
+
         viewModelScope.launch {
+            _loadFullUiState.update { it.copy(isLoading = true, error = null) } // ВНИМАНИЕ --> ПОМЕНЯТЬ!!!
+
             try {
-                _loadFullUiState.update {
-                    it.copy(
-                        isLoading = true,
-                        error = null,
-                        success = false
-                    )
-                }
-
-                Log.d("GetVM", "Loading")
-
-                loadStoryFullByIdUseCase(_storyId!!)
-
-                _loadFullUiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = null,
-                        success = true
-                    )
-                }
+                loadStoryFullByIdUseCase(storyId)
+                Log.d("StoryFullSuccess", "SUCCESS")
+                _loadFullUiState.update { it.copy(isLoading = false, success = true) }
             } catch (e: Throwable) {
                 _loadFullUiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to load story",
-                        success = false
+                        error = e.message ?: "Failed to load story"
                     )
                 }
             }

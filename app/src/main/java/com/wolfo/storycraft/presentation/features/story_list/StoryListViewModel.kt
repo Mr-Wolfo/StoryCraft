@@ -46,6 +46,7 @@ class StoryListViewModel(
             observeStoriesUseCase()
                 .onStart { _uiState.update { it.copy(isLoading = true, error = null) } }
                 .catch { throwable ->
+                    Log.d("ObserveStoryListVM", "Error $throwable")
                     _uiState.update { it.copy(isLoading = false, error = throwable.message ?: "Unknown error") }
                 }
                 .collect { stories ->

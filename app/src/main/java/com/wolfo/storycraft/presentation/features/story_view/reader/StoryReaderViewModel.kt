@@ -5,9 +5,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wolfo.storycraft.domain.model.Story
-import com.wolfo.storycraft.domain.usecase.LoadStoryFullByIdUseCase
+import com.wolfo.storycraft.domain.usecase.ObserveStoryFullByIdUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -18,7 +20,7 @@ data class StoryReaderUiState(
 )
 
 class StoryReaderViewModel(
-//    private val loadStoryFullByIdUseCase: LoadStoryFullByIdUseCase,
+    private val observeStoryFullByIdUseCase: ObserveStoryFullByIdUseCase,
     private val savedStateHandle: SavedStateHandle
 ): ViewModel() {
     private val _uiState = MutableStateFlow(StoryReaderUiState())
@@ -27,7 +29,7 @@ class StoryReaderViewModel(
     val storyId: Long get() = _storyId ?: -1L
 
     init {
-        Log.d("load", "")
+        observeStoryFullById()
 //        savedStateHandle["storyId"] = _storyId
 //        _storyId?.let { loadStoryFullById() }
     }
@@ -35,6 +37,25 @@ class StoryReaderViewModel(
     fun attemptLoadStory() {
         savedStateHandle["storyId"] = _storyId
 //        _storyId?.let { loadStoryFullById() }
+    }
+
+    private fun observeStoryFullById() {
+        viewModelScope.launch {
+            observeStoryFullByIdUseCase(storyId = storyId)
+                .onStart { _uiState.update { it.copy(isLoading = true, error = null) } }
+                .catch { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = throwable.message ?: "Unknown error"
+                        )
+                    }
+                }
+                .collect { story ->
+                    Log.d("FullStory", "${story.pages.size}")
+                    _uiState.update { it.copy(isLoading = false, story = story) }
+                }
+        }
     }
 
     /*private fun loadStoryFullById() {

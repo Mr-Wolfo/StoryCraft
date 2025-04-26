@@ -1,6 +1,7 @@
 package com.wolfo.storycraft.data.local.data_store
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -15,6 +16,7 @@ class AuthTokenManager(private val context: Context) {
     suspend fun saveToken(token: String) {
         context.dataStore.edit { preferences ->
             preferences[authTokenKey] = token
+            Log.d("TOKEN", "Save")
         }
     }
 

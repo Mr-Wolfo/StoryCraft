@@ -1,5 +1,6 @@
 package com.wolfo.storycraft.data.repository
 
+import android.util.Log
 import com.wolfo.storycraft.data.local.data_store.AuthTokenManager
 import com.wolfo.storycraft.data.local.db.LocalDataSource
 import com.wolfo.storycraft.data.mapper.toDomain
@@ -29,7 +30,9 @@ class UserRepositoryImpl(
         when(result) {
             is NetworkResult.Success -> {
                 val token = result.data?.token
+                Log.d("REGISTER", "Token: ${token}")
                 token?.let { authTokenManager.saveToken(token) } ?: authTokenManager.clearToken()
+                Log.d("REGISTER", "Token: ${token}")
                 val user = result.data?.user
                 user?.let { localDataSource.saveUser(user.toEntity()) }
             }
@@ -47,8 +50,10 @@ class UserRepositoryImpl(
         when(result) {
             is NetworkResult.Success -> {
                 val token = result.data?.token
+                Log.d("LOGIN", "Token: ${token}")
                 token?.let { authTokenManager.saveToken(token) } ?: authTokenManager.clearToken()
                 val user = result.data?.user
+                Log.d("LOGIN", "Token: ${token}")
                 user?.let { localDataSource.saveUser(user.toEntity()) }
             }
             is NetworkResult.Error -> {
@@ -58,22 +63,48 @@ class UserRepositoryImpl(
         }
     }
 
-    override suspend fun observeProfile(): Flow<User> = flow {
-
-        val localDataFlow = localDataSource.observeProfile().map { it.toDomain() }
-        localDataFlow.collect { user ->
-            emit(user)
+    override suspend fun logout() {
+        try {
+            authTokenManager.clearToken()
+            localDataSource.clearUser()
+        } catch (e: Exception) {
+            throw Throwable(e.message)
         }
     }
 
+    override fun observeAuthToken(): Flow<Boolean> = flow {
+        val isLoggedIn = authTokenManager.getToken().map { it != null }
+        isLoggedIn.collect { isLoggedIn ->
+            emit(isLoggedIn)
+        }
+    }
+
+    override fun observeProfile(): Flow<User> = flow {
+        try {
+            loadProfile()
+        } catch (e: Exception) {
+            Log.e("ProfileRepo", "Failed to refresh profile", e)
+        }
+
+        localDataSource.observeProfile()
+            .map { entity ->
+                entity?.toDomain() ?: User(0, "???", "???")
+            }
+            .collect { user ->
+                Log.d("EMIT", user.userName)
+                emit(user) // Передаем данные дальше по Flow
+            }
+    }
     suspend fun loadProfile() {
         val token = authTokenManager.getToken().first() ?: ""
+        Log.d("LoadProfileToken", "${token}")
         val result = safeApiCall { remoteDataSource.getProfile(token) }
         when(result) {
             is NetworkResult.Success -> {
-                localDataSource
+                result.data?.let { localDataSource.saveUser(result.data.toEntity())}
             }
             is NetworkResult.Error -> {
+                logout()
                 throw Throwable(result.message)
             }
             is NetworkResult.Loading -> {}

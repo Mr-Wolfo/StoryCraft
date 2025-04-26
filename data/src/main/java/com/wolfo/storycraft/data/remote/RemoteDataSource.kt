@@ -15,7 +15,7 @@ class RemoteDataSource(private val apiService: ApiService) {
 
     suspend fun register(body: RegisterRequestDto) = apiService.register(registerRequest = body)
 
-    suspend fun login(body: AuthRequestDto) = apiService.login(authRequest = body)
+    suspend fun login(body: AuthRequestDto) = apiService.login(grantType = body.grantType, username = body.name, password = body.password, null,null,null)
 
-    suspend fun getProfile(token: String) = apiService.getProfile(token = token)
+    suspend fun getProfile(token: String) = apiService.getProfile(token = "Bearer $token")
 }

@@ -8,5 +8,7 @@ import kotlinx.coroutines.flow.Flow
 interface UserRepository {
     suspend fun register(registerRequest: RegisterRequest)
     suspend fun login(authRequest: AuthRequest)
-    suspend fun observeProfile(): Flow<User>
+    suspend fun logout()
+    fun observeProfile(): Flow<User>
+    fun observeAuthToken(): Flow<Boolean>
 }

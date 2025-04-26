@@ -1,5 +1,7 @@
 package com.wolfo.storycraft.di
 
+import com.wolfo.storycraft.presentation.common.AuthStateViewModel
+import com.wolfo.storycraft.presentation.features.profile.ProfileViewModel
 import com.wolfo.storycraft.presentation.features.profile.auth.AuthFormViewModel
 import com.wolfo.storycraft.presentation.features.profile.auth.AuthViewModel
 import com.wolfo.storycraft.presentation.features.story_list.StoryListViewModel
@@ -16,17 +18,24 @@ val viewModelModule = module {
     }
 
     viewModel<StoryReaderViewModel> {
-        StoryReaderViewModel(get())
+        StoryReaderViewModel(get(), get())
     }
     viewModel<StoryDetailsViewModel> {
         StoryDetailsViewModel(get(), get(), get())
     }
 
     viewModel<AuthViewModel> {
-        AuthViewModel(get())
+        AuthViewModel(get(), get())
+    }
+
+    viewModel<AuthStateViewModel> {
+        AuthStateViewModel(get(), get())
     }
 
     viewModel<AuthFormViewModel> {
         AuthFormViewModel()
+    }
+    viewModel<ProfileViewModel> {
+        ProfileViewModel(get())
     }
 }

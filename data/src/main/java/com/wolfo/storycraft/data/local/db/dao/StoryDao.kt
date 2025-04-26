@@ -1,5 +1,6 @@
 package com.wolfo.storycraft.data.local.db.dao
 
+import android.util.Log
 import androidx.room.Dao
 import androidx.room.Embedded
 import androidx.room.Insert
@@ -43,10 +44,21 @@ interface StoryDao {
         pages: List<PageEntity>,
         choices: List<ChoiceEntity>
     ) {
-        insertOrReplaceStory(story)
-        deletePagesForStory(story.id)
-        insertPages(pages)
-        insertChoices(choices)
+        try {
+            Log.d("Dao", "insertOrReplaceStory")
+            insertOrReplaceStory(story)
+            Log.d("Dao", "deletePagesForStory")
+            deletePagesForStory(story.id)
+            Log.d("Dao", "insertPages")
+            insertPages(pages)
+            Log.d("Dao", "insertChoices")
+
+            insertChoices(choices)
+            Log.d("Dao", "END")
+        } catch (e: Exception) {
+            Log.e("Dao", "Error in insertOrReplaceStoryFull", e)
+            throw e
+        }
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

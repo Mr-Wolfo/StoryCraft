@@ -8,7 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 val apiModule = module {
 
-    val BASE_URL = "http://10.0.2.2:8000"
+    val BASE_URL = "http://192.168.45.229:8000" // ЛОКАЛЬНЫЙ
 
     single<OkHttpClient> {
         OkHttpClient.Builder().build()

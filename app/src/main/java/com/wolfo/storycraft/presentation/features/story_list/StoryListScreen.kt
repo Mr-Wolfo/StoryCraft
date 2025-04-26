@@ -12,18 +12,20 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +47,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wolfo.storycraft.domain.model.StoryBase
+import com.wolfo.storycraft.presentation.common.Loading
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -63,6 +66,8 @@ fun StoryListScreen(
             uiState.stories.isEmpty() -> Empty()
             else -> {
                 StoryList(
+                    modifier = Modifier.fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.statusBars),
                     isRefreshing = false,
                     stories = uiState.stories,
                     { viewModel.refreshStoriesCatalog() },
@@ -75,6 +80,7 @@ fun StoryListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoryList(
+    modifier: Modifier,
     isRefreshing: Boolean,
     stories: List<StoryBase>,
     onRefresh: () -> Unit,
@@ -83,7 +89,7 @@ fun StoryList(
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         LazyColumn(modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(5.dp),
@@ -101,36 +107,13 @@ fun Empty() {
         Text(text = "Пусто")
     }
 }
-
-
-@Composable
-fun Loading() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
-}
-
-@Composable
-fun Error(e: String) {
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = e)
-    }
-}
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun Item(
     story: StoryBase,
     onStory: (Long) -> Unit
 ) {
-    // Здесь можно получить реальное изображение для истории (например, из viewModel)
-    val imagePainter: Painter? = null // Замените на реальную загрузку изображения
+    val imagePainter: Painter? = null
 
     Card(
         modifier = Modifier
@@ -157,7 +140,7 @@ fun Item(
                         .background(
                             brush = Brush.horizontalGradient(
                                 colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f),
                                     MaterialTheme.colorScheme.secondary
                                 ),
                                 startX = 0f,
