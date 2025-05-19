@@ -1,32 +1,31 @@
 package com.wolfo.storycraft.presentation.features.story_view.reader
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wolfo.storycraft.domain.model.Story
-import com.wolfo.storycraft.domain.usecase.ObserveStoryFullByIdUseCase
+import com.wolfo.storycraft.domain.DataError
+import com.wolfo.storycraft.domain.ResultM
+import com.wolfo.storycraft.domain.model.StoryFull
+import com.wolfo.storycraft.domain.usecase.story.GetStoryDetailsStreamUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class StoryReaderUiState(
-    val isLoading: Boolean = false,
-    val story: Story? = null,
-    val error: String? = null
-)
+sealed class StoryReaderUiState<out T> {
+    object Idle : StoryReaderUiState<Nothing>()
+    object Loading : StoryReaderUiState<Nothing>()
+    data class Success(val data: StoryFull) : StoryReaderUiState<StoryFull>()
+    data class Error<out T>(val error: DataError) : StoryReaderUiState<T>()
+}
 
 class StoryReaderViewModel(
-    private val observeStoryFullByIdUseCase: ObserveStoryFullByIdUseCase,
+    private val getStoryDetailsStreamUseCase: GetStoryDetailsStreamUseCase,
     private val savedStateHandle: SavedStateHandle
 ): ViewModel() {
-    private val _uiState = MutableStateFlow(StoryReaderUiState())
+    private val _uiState = MutableStateFlow<StoryReaderUiState<StoryFull>>(StoryReaderUiState.Idle)
     val uiState = _uiState.asStateFlow()
-    private var _storyId: Long? = savedStateHandle.get<Long>("storyId")
-    val storyId: Long get() = _storyId ?: -1L
+    private var _storyId: String? = savedStateHandle.get<String>("storyId")
+    val storyId: String get() = _storyId ?: ""
 
     init {
         observeStoryFullById()
@@ -40,54 +39,23 @@ class StoryReaderViewModel(
     }
 
     private fun observeStoryFullById() {
+        _uiState.value = StoryReaderUiState.Loading
         viewModelScope.launch {
-            observeStoryFullByIdUseCase(storyId = storyId)
-                .onStart { _uiState.update { it.copy(isLoading = true, error = null) } }
-                .catch { throwable ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = throwable.message ?: "Unknown error"
-                        )
+            getStoryDetailsStreamUseCase(storyId = storyId)
+                .collect { storyFull ->
+                    when (storyFull) {
+                        is ResultM.Success -> {
+                            _uiState.value = StoryReaderUiState.Success(storyFull.data)
+                        }
+                        is ResultM.Failure -> {
+                            _uiState.value = StoryReaderUiState.Error(storyFull.error)
+                        }
+                        ResultM.Loading -> {
+                            // Уже обработали выше
+                        }
                     }
-                }
-                .collect { story ->
-                    Log.d("FullStory", "${story.pages.size}")
-                    _uiState.update { it.copy(isLoading = false, story = story) }
+
                 }
         }
     }
-
-    /*private fun loadStoryFullById() {
-        viewModelScope.launch {
-            try {
-                _uiState.update {
-                    it.copy(
-                        isLoading = true,
-                        story = null,
-                        error = null
-                    )
-                }
-
-                Log.d("GetVM", "Loading")
-
-                val story = loadStoryFullByIdUseCase(_storyId!!)
-
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        story = story,
-                        error = if (story == null) "Story not found" else null
-                    )
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = e.message ?: "Failed to load story"
-                    )
-                }
-            }
-        }
-    }*/
 }

@@ -1,100 +1,55 @@
 package com.wolfo.storycraft.data.local.db.dao
 
-import android.util.Log
 import androidx.room.Dao
 import androidx.room.Embedded
 import androidx.room.Insert
+import androidx.room.Junction
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
+import com.wolfo.storycraft.data.local.db.entity.AuthorEntity
 import com.wolfo.storycraft.data.local.db.entity.ChoiceEntity
 import com.wolfo.storycraft.data.local.db.entity.PageEntity
+import com.wolfo.storycraft.data.local.db.entity.ReviewEntity
 import com.wolfo.storycraft.data.local.db.entity.StoryEntity
+import com.wolfo.storycraft.data.local.db.entity.StoryTagCrossRef
+import com.wolfo.storycraft.data.local.db.entity.StoryWithAuthorAndTags
+import com.wolfo.storycraft.data.local.db.entity.TagEntity
+import com.wolfo.storycraft.data.local.db.entity.UserEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface StoryDao {
-    @Query("SELECT * FROM stories ORDER BY title ASC")
-    fun observeStoryList(): Flow<List<StoryEntity>>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdateStory(story: StoryEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdateStories(stories: List<StoryEntity>)
+
+    @Transaction // Обязательно для загрузки связей (@Relation)
+    @Query("SELECT * FROM stories ORDER BY published_time DESC") // Уточните поле сортировки, если имя в Entity другое
+    fun getStoriesWithAuthorAndTagsStream(): Flow<List<StoryWithAuthorAndTags>>
+
+    // Получаем базовую историю с автором и тегами
     @Transaction
-    @Query("SELECT * FROM stories WHERE id = :storyId")
-    fun observeStoryFullById(storyId: Long): Flow<StoryWithPagesAndChoices?>
+    @Query("SELECT * FROM stories WHERE id = :storyId LIMIT 1")
+    suspend fun getStoryWithAuthorAndTagsById(storyId: String): StoryWithAuthorAndTags?
 
-    @Query("SELECT * FROM STORIES WHERE id = :storyId")
-    fun observeStoryBaseById(storyId: Long): Flow<StoryEntity>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrReplaceStoryList(storyList: List<StoryEntity>)
-
-    @Transaction
-    suspend fun clearAndReplaceStoryList(storyList: List<StoryEntity>) {
-        deleteStoryList()
-        insertOrReplaceStoryList(storyList)
-
-    }
-
-    @Query("DELETE FROM stories")
-    suspend fun deleteStoryList()
-
-    @Transaction
-    suspend fun insertOrReplaceStoryFull(
-        story: StoryEntity,
-        pages: List<PageEntity>,
-        choices: List<ChoiceEntity>
-    ) {
-        try {
-            Log.d("Dao", "insertOrReplaceStory")
-            insertOrReplaceStory(story)
-            Log.d("Dao", "deletePagesForStory")
-            deletePagesForStory(story.id)
-            Log.d("Dao", "insertPages")
-            insertPages(pages)
-            Log.d("Dao", "insertChoices")
-
-            insertChoices(choices)
-            Log.d("Dao", "END")
-        } catch (e: Exception) {
-            Log.e("Dao", "Error in insertOrReplaceStoryFull", e)
-            throw e
-        }
-    }
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertOrReplaceStory(story: StoryEntity)
-
-    @Query("DELETE FROM pages WHERE storyId = :storyId")
-    suspend fun deletePagesForStory(storyId: Long)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPages(pages: List<PageEntity>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertChoices(choice: List<ChoiceEntity>)
+    // Получаем только сущность истории
+    @Query("SELECT * FROM stories WHERE id = :storyId LIMIT 1")
+    suspend fun getStoryEntityById(storyId: String): StoryEntity?
 
     @Query("DELETE FROM stories WHERE id = :storyId")
-    suspend fun deleteStoryById(storyId: Long)
+    suspend fun deleteStoryById(storyId: String) // Room обработает каскадное удаление связей
+
+    @Query("DELETE FROM stories")
+    suspend fun clearAllStories()
+
+    // Методы для работы со связями (альтернатива StoryTagCrossRefDao)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertStoryTagCrossRefs(crossRefs: List<StoryTagCrossRef>)
+
+    @Query("DELETE FROM story_tag_cross_ref WHERE story_id = :storyId")
+    suspend fun deleteStoryTagCrossRefsForStory(storyId: String)
 }
-
-data class StoryWithPagesAndChoices(
-    @Embedded
-    val story: StoryEntity,
-    @Relation(
-        entity = PageEntity::class,
-        parentColumn = "id",
-        entityColumn = "storyId"
-    )
-    val pages: List<PageWithChoices>
-)
-
-data class PageWithChoices(
-    @Embedded
-    val page: PageEntity,
-    @Relation(
-        entity = ChoiceEntity::class,
-        parentColumn = "id",
-        entityColumn = "pageId"
-    )
-    val choices: List<ChoiceEntity>
-)

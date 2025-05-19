@@ -1,46 +1,86 @@
 package com.wolfo.storycraft.di
 
-import com.wolfo.storycraft.domain.usecase.LoadStoryFullByIdUseCase
-import com.wolfo.storycraft.domain.usecase.LoginUseCase
-import com.wolfo.storycraft.domain.usecase.LogoutUseCase
-import com.wolfo.storycraft.domain.usecase.ObserveAuthTokenUseCase
-import com.wolfo.storycraft.domain.usecase.ObserveStoriesUseCase
-import com.wolfo.storycraft.domain.usecase.ObserveStoryBaseByIdUseCase
-import com.wolfo.storycraft.domain.usecase.ObserveStoryFullByIdUseCase
-import com.wolfo.storycraft.domain.usecase.ObserveUserProfileUseCase
-import com.wolfo.storycraft.domain.usecase.RefreshStoriesUseCase
-import com.wolfo.storycraft.domain.usecase.RegisterUseCase
+import com.wolfo.storycraft.domain.usecase.auth.CheckLoginStatusUseCase
+import com.wolfo.storycraft.domain.usecase.auth.GetAccessTokenUseCase
+import com.wolfo.storycraft.domain.usecase.auth.LoginUserUseCase
+import com.wolfo.storycraft.domain.usecase.auth.LogoutUserUseCase
+import com.wolfo.storycraft.domain.usecase.auth.RegisterUserUseCase
+import com.wolfo.storycraft.domain.usecase.story.CreateReviewUseCase
+import com.wolfo.storycraft.domain.usecase.story.CreateStoryUseCase
+import com.wolfo.storycraft.domain.usecase.story.DeleteReviewUseCase
+import com.wolfo.storycraft.domain.usecase.story.DeleteStoryUseCase
+import com.wolfo.storycraft.domain.usecase.story.GetReviewsStreamUseCase
+import com.wolfo.storycraft.domain.usecase.story.GetStoriesStreamUseCase
+import com.wolfo.storycraft.domain.usecase.story.GetStoryBaseUseCase
+import com.wolfo.storycraft.domain.usecase.story.GetStoryDetailsStreamUseCase
+import com.wolfo.storycraft.domain.usecase.story.UpdateReviewUseCase
+import com.wolfo.storycraft.domain.usecase.story.UpdateStoryUseCase
+import com.wolfo.storycraft.domain.usecase.user.GetCurrentUserStreamUseCase
+import com.wolfo.storycraft.domain.usecase.user.GetUserProfileUseCase
+import com.wolfo.storycraft.domain.usecase.user.RefreshCurrentUserUseCase
+import com.wolfo.storycraft.domain.usecase.user.UpdateCurrentUserAvatarUseCase
+import com.wolfo.storycraft.domain.usecase.user.UpdateCurrentUserUseCase
 import org.koin.dsl.module
 
 val useCaseModule = module {
-    factory<ObserveStoriesUseCase> {
-        ObserveStoriesUseCase(get())
+    factory<CheckLoginStatusUseCase> {
+        CheckLoginStatusUseCase(get())
     }
-    factory<LoadStoryFullByIdUseCase> {
-        LoadStoryFullByIdUseCase(get())
+    factory<GetAccessTokenUseCase> {
+        GetAccessTokenUseCase(get())
     }
-    factory<RefreshStoriesUseCase> {
-        RefreshStoriesUseCase(get())
+    factory<LoginUserUseCase> {
+        LoginUserUseCase(get())
     }
-    factory<ObserveStoryBaseByIdUseCase> {
-        ObserveStoryBaseByIdUseCase(get())
+    factory<LogoutUserUseCase> {
+        LogoutUserUseCase(get())
     }
-    factory<ObserveStoryFullByIdUseCase> {
-        ObserveStoryFullByIdUseCase(get())
+    factory<RegisterUserUseCase> {
+        RegisterUserUseCase(get())
     }
-    factory<RegisterUseCase> {
-        RegisterUseCase(get())
+    factory<CreateReviewUseCase> {
+        CreateReviewUseCase(get())
     }
-    factory<LoginUseCase> {
-        LoginUseCase(get())
+    factory<CreateStoryUseCase> {
+        CreateStoryUseCase(get())
     }
-    factory<LogoutUseCase> {
-        LogoutUseCase(get())
+    factory<DeleteReviewUseCase> {
+        DeleteReviewUseCase(get())
     }
-    factory<ObserveAuthTokenUseCase> {
-        ObserveAuthTokenUseCase(get())
+    factory<DeleteStoryUseCase> {
+        DeleteStoryUseCase(get())
     }
-    factory<ObserveUserProfileUseCase> {
-        ObserveUserProfileUseCase(get())
+    factory<GetReviewsStreamUseCase> {
+        GetReviewsStreamUseCase(get())
+    }
+    factory<GetStoriesStreamUseCase> {
+        GetStoriesStreamUseCase(get())
+    }
+    factory<GetStoryBaseUseCase> {
+        GetStoryBaseUseCase(get())
+    }
+    factory<GetStoryDetailsStreamUseCase> {
+        GetStoryDetailsStreamUseCase(get())
+    }
+    factory<UpdateReviewUseCase> {
+        UpdateReviewUseCase(get())
+    }
+    factory<UpdateStoryUseCase> {
+        UpdateStoryUseCase(get())
+    }
+    factory<GetCurrentUserStreamUseCase> {
+        GetCurrentUserStreamUseCase(get())
+    }
+    factory<GetUserProfileUseCase> {
+        GetUserProfileUseCase(get())
+    }
+    factory<RefreshCurrentUserUseCase> {
+        RefreshCurrentUserUseCase(get())
+    }
+    factory<UpdateCurrentUserUseCase> {
+        UpdateCurrentUserUseCase(get())
+    }
+    factory<UpdateCurrentUserAvatarUseCase> {
+        UpdateCurrentUserAvatarUseCase(get())
     }
 }

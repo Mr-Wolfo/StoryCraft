@@ -1,36 +1,69 @@
 package com.wolfo.storycraft.presentation.common
 
+import android.graphics.drawable.AnimatedVectorDrawable
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.DraggableState
+import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.VectorPainter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -50,35 +83,13 @@ fun GlassCard(
         colors = CardDefaults.cardColors(
             containerColor = colorScheme.surface.copy(alpha = 0.7f)
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         border = BorderStroke(
             1.dp,
             colorScheme.outline.copy(alpha = 0.2f)
         )
     ) {
         Box(
-            modifier = Modifier
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            colorScheme.surface.copy(alpha = 0.5f),
-                            colorScheme.surface.copy(alpha = 0.9f)
-                        )
-                    )
-                )
-                .drawWithCache {
-                    onDrawWithContent {
-                        drawContent()
-                        drawRect(
-                            brush = Brush.verticalGradient(
-                                0f to Color.Transparent,
-                                0.3f to colorScheme.primary.copy(alpha = 0.05f),
-                                1f to Color.Transparent
-                            ),
-                            blendMode = BlendMode.Overlay
-                        )
-                    }
-                }
+            modifier = Modifier.fillMaxWidth()
         ) {
             content()
         }
@@ -87,7 +98,10 @@ fun GlassCard(
 
 // Премиум чип с дополнительным текстом
 @Composable
-fun PremiumInfoChip(icon: ImageVector, text: String, subText: String) {
+fun PremiumInfoChip(icon: ImageVector,
+                    color: Color = MaterialTheme.colorScheme.tertiary,
+                    text: String,
+                    subText: String) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -109,7 +123,7 @@ fun PremiumInfoChip(icon: ImageVector, text: String, subText: String) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.tertiary,
+                tint = color,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -179,12 +193,52 @@ fun ImmersiveBackground(scrollState: ScrollState? = null) {
 }
 
 @Composable
-fun Loading() {
+fun Loading(
+) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator()
+    }
+}
+
+@Composable
+fun LoadingBar(
+    isVisible: Boolean,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        enter = slideInVertically() { it } + fadeIn(),
+        exit = slideOutVertically() { it } + fadeOut(),
+        visible = isVisible
+    ) {
+        Surface(
+            modifier = Modifier
+                .padding(16.dp),
+            shadowElevation = 14.dp,
+            color = Color.Transparent
+        ) {
+            val infiniteTransition = rememberInfiniteTransition()
+            val rotation by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 360f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 1000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                )
+            )
+
+            Icon(
+                    painter = rememberVectorPainter(Icons.Default.Favorite),
+                    modifier = Modifier.graphicsLayer() {
+                        rotationY = rotation
+                    }
+                        .size(50.dp),
+                    contentDescription = "Loading",
+                    tint = Color.Red
+            )
+        }
     }
 }
 
@@ -198,6 +252,55 @@ fun Error(e: String) {
     }
 }
 
+@Composable
+fun ErrorBottomMessage(
+    message: String,
+    modifier: Modifier = Modifier,
+    isVisible: Boolean,
+    onDismiss: () -> Unit
+) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically() { it } + fadeIn(),
+        exit = slideOutVertically() { it } + fadeOut(),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        val swipeState = rememberSwipeToDismissBoxState()
+
+        SwipeToDismissBox(state = swipeState,
+            backgroundContent = { }) {
+            Surface(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.errorContainer,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(
+                        horizontal = 16.dp,
+                        vertical = 12.dp
+                    ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    }
+}
 
 fun formatNumber(number: Int): String {
     return when {

@@ -2,6 +2,7 @@ package com.wolfo.storycraft
 
 import android.app.Application
 import com.wolfo.storycraft.di.apiModule
+import com.wolfo.storycraft.di.appModule
 import com.wolfo.storycraft.di.dataBaseModule
 import com.wolfo.storycraft.di.repositoryModule
 import com.wolfo.storycraft.di.useCaseModule
@@ -19,7 +20,7 @@ class StoryCraftApp : Application() {
         startKoin {
             androidLogger(Level.DEBUG)
             androidContext(this@StoryCraftApp)
-            modules(listOf(useCaseModule, viewModelModule, apiModule, repositoryModule, dataBaseModule))
+            modules(listOf(useCaseModule, viewModelModule, apiModule, repositoryModule, dataBaseModule, appModule))
         }
     }
 }

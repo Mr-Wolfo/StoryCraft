@@ -7,107 +7,129 @@ import com.wolfo.storycraft.data.mapper.toDomain
 import com.wolfo.storycraft.data.mapper.toDto
 import com.wolfo.storycraft.data.mapper.toEntity
 import com.wolfo.storycraft.data.remote.RemoteDataSource
-import com.wolfo.storycraft.data.utils.BaseApiResponse
-import com.wolfo.storycraft.data.utils.NetworkResult
-import com.wolfo.storycraft.domain.model.AuthRequest
-import com.wolfo.storycraft.domain.model.RegisterRequest
+import com.wolfo.storycraft.data.utils.NetworkHandler
+import com.wolfo.storycraft.data.utils.RepositoryHandler
+import com.wolfo.storycraft.domain.DataError
+import com.wolfo.storycraft.domain.ResultM
 import com.wolfo.storycraft.domain.model.User
+import com.wolfo.storycraft.domain.model.UserSimple
+import com.wolfo.storycraft.domain.model.UserUpdate
 import com.wolfo.storycraft.domain.repository.UserRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
+import java.io.File
 
 class UserRepositoryImpl(
-    private val remoteDataSource: RemoteDataSource,
     private val localDataSource: LocalDataSource,
-    private val authTokenManager: AuthTokenManager
-) : UserRepository, BaseApiResponse() {
-    override suspend fun register(
-        registerRequest: RegisterRequest
-    ) {
-        val result = safeApiCall { remoteDataSource.register(registerRequest.toDto()) }
-        when(result) {
-            is NetworkResult.Success -> {
-                val token = result.data?.token
-                Log.d("REGISTER", "Token: ${token}")
-                token?.let { authTokenManager.saveToken(token) } ?: authTokenManager.clearToken()
-                Log.d("REGISTER", "Token: ${token}")
-                val user = result.data?.user
-                user?.let { localDataSource.saveUser(user.toEntity()) }
-            }
-            is NetworkResult.Error -> {
-                throw Throwable(result.message)
-            }
-            is NetworkResult.Loading -> {}
-        }
-    }
+    private val remoteDataSource: RemoteDataSource,
+    private val tokenManager: AuthTokenManager, // Нужен для получения ID текущего пользователя
+    private val networkHandler: NetworkHandler,
+    private val repositoryHandler: RepositoryHandler// Утилита для обработки сетевых вызовов
+) : UserRepository {
 
-    override suspend fun login(
-        authRequest: AuthRequest
-    ) {
-        val result = safeApiCall { remoteDataSource.login(authRequest.toDto()) }
-        when(result) {
-            is NetworkResult.Success -> {
-                val token = result.data?.token
-                Log.d("LOGIN", "Token: ${token}")
-                token?.let { authTokenManager.saveToken(token) } ?: authTokenManager.clearToken()
-                val user = result.data?.user
-                Log.d("LOGIN", "Token: ${token}")
-                user?.let { localDataSource.saveUser(user.toEntity()) }
-            }
-            is NetworkResult.Error -> {
-                throw Throwable(result.message)
-            }
-            is NetworkResult.Loading -> {}
-        }
-    }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val currentUserFlow: Flow<ResultM<User>> = tokenManager.userIdFlow
+        .flatMapLatest { userId ->
+            Log.d("UserRepository", "User Flow Start")
 
-    override suspend fun logout() {
-        try {
-            authTokenManager.clearToken()
-            localDataSource.clearUser()
-        } catch (e: Exception) {
-            throw Throwable(e.message)
-        }
-    }
-
-    override fun observeAuthToken(): Flow<Boolean> = flow {
-        val isLoggedIn = authTokenManager.getToken().map { it != null }
-        isLoggedIn.collect { isLoggedIn ->
-            emit(isLoggedIn)
-        }
-    }
-
-    override fun observeProfile(): Flow<User> = flow {
-        try {
-            loadProfile()
-        } catch (e: Exception) {
-            Log.e("ProfileRepo", "Failed to refresh profile", e)
+            repositoryHandler.getData(
+                localDataCall = { localDataSource.getUserFlow(userId!!) },
+                networkResult = { refreshCurrentUser() },
+                localTransform = { it!!.toDomain() },
+                sourcesDataMergeTransform = { user, result -> user.copy(stories = result.stories) },
+                checkOrErrorBefore = {
+                    if (userId == null) ResultM.Failure(DataError.Authentication())
+                    else null
+                }
+            ).flowOn(Dispatchers.IO)
         }
 
-        localDataSource.observeProfile()
-            .map { entity ->
-                entity?.toDomain() ?: User(0, "???", "???")
+    override suspend fun refreshCurrentUser(): ResultM<User> = withContext(Dispatchers.IO) {
+        networkHandler.handleNetworkCall(
+            call = { remoteDataSource.getCurrentUser() },
+            transform = { userDto -> userDto.toDomain() },
+            onSuccess = { userDto ->
+                val userEntity = userDto.toEntity()
+                localDataSource.saveUser(userEntity)
+                tokenManager.saveUserId(userEntity.id)
+            },
+            onError = { error ->
+                if (error is DataError.Authentication) {
+                    tokenManager.clearTokens()
+                    tokenManager.clearUserId()
+                }
+                ResultM.failure(error)
             }
-            .collect { user ->
-                Log.d("EMIT", user.userName)
-                emit(user) // Передаем данные дальше по Flow
-            }
+        )
     }
-    suspend fun loadProfile() {
-        val token = authTokenManager.getToken().first() ?: ""
-        Log.d("LoadProfileToken", "${token}")
-        val result = safeApiCall { remoteDataSource.getProfile(token) }
-        when(result) {
-            is NetworkResult.Success -> {
-                result.data?.let { localDataSource.saveUser(result.data.toEntity())}
+
+    // Получение простого профиля пользователя (без кэширования)
+    override suspend fun getUserProfile(userId: String): ResultM<UserSimple> = withContext(Dispatchers.IO) {
+        networkHandler.handleNetworkCall(
+            call = { remoteDataSource.getUserProfile(userId) },
+            transform = { userSimpleDto -> userSimpleDto.toDomain() }, // DTO -> Domain
+            onSuccess = { /* Не кэшируем простые профили по умолчанию */ }
+        )
+    }
+
+    // Обновление данных текущего пользователя
+    override suspend fun updateCurrentUser(userData: UserUpdate): ResultM<User> = withContext(Dispatchers.IO) {
+        networkHandler.handleNetworkCall(
+            call = { remoteDataSource.updateUser(userData.toDto()) }, // Domain -> DTO
+            transform = { userDto -> userDto.toDomain() }, // DTO -> Domain
+            onSuccess = { updatedUserDto ->
+                // Обновляем кэш в локальной БД
+                localDataSource.saveUser(updatedUserDto.toEntity())
             }
-            is NetworkResult.Error -> {
-                logout()
-                throw Throwable(result.message)
+        )
+    }
+
+    // Обновление аватара текущего пользователя
+    override suspend fun updateCurrentUserAvatar(avatarFile: File): ResultM<User> = withContext(Dispatchers.IO) {
+        networkHandler.handleNetworkCall(
+            call = { remoteDataSource.updateUserAvatar(avatarFile) },
+            transform = { userDto -> userDto.toDomain() }, // DTO -> Domain
+            onSuccess = { updatedUserDto ->
+                // Обновляем кэш в локальной БД
+                localDataSource.saveUser(updatedUserDto.toEntity())
             }
-            is NetworkResult.Loading -> {}
+        )
+    }
+
+
+    // --- Вспомогательные методы для AuthRepository ---
+
+    /**
+     * Сохраняет данные пользователя в локальную БД.
+     * Вызывается из AuthRepository после успешного логина/регистрации.
+     */
+    override suspend fun saveCurrentUser(user: User) = withContext(Dispatchers.IO) {
+        localDataSource.saveUser(user.toEntity())
+        // Убеждаемся, что ID пользователя сохранен в менеджере токенов
+        tokenManager.saveUserId(user.id)
+    }
+
+    /**
+     * Очищает данные текущего пользователя из локальной БД.
+     * Вызывается из AuthRepository при логауте.
+     */
+    override suspend fun clearCurrentUser() = withContext(Dispatchers.IO) {
+        val userId = tokenManager.getUserId() // Получаем ID текущего юзера
+        if (userId != null) {
+            localDataSource.clearUsers() // Удаляем из Room
         }
+        // ID уже очищен в tokenManager.clearUserId() внутри AuthRepository.logout()
+    }
+
+    /**
+     * Получает ID текущего пользователя (если есть).
+     * Может быть полезен в других частях приложения.
+     */
+    override suspend fun getCurrentUserId(): String? = withContext(Dispatchers.IO) {
+        tokenManager.getUserId()
     }
 }

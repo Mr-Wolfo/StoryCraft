@@ -4,101 +4,137 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wolfo.storycraft.domain.model.StoryBase
-import com.wolfo.storycraft.domain.usecase.LoadStoryFullByIdUseCase
-import com.wolfo.storycraft.domain.usecase.ObserveStoryBaseByIdUseCase
+import com.wolfo.storycraft.domain.DataError
+import com.wolfo.storycraft.domain.ResultM
+import com.wolfo.storycraft.domain.model.Review
+import com.wolfo.storycraft.domain.model.StoryBaseInfo
+import com.wolfo.storycraft.domain.usecase.story.GetReviewsStreamUseCase
+import com.wolfo.storycraft.domain.usecase.story.GetStoryBaseUseCase
+import com.wolfo.storycraft.domain.usecase.story.GetStoryDetailsStreamUseCase
+import com.wolfo.storycraft.presentation.features.story_list.AppStatusBarUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class StoryDetailsUiState(
-    val isLoading: Boolean = false,
-    val story: StoryBase? = null,
-    val error: String? = null
-)
+sealed class StoryDetailsUiState<out T> {
+    object Idle : StoryDetailsUiState<Nothing>()
+    object Loading : StoryDetailsUiState<Nothing>()
+    data class Success(val data: StoryBaseInfo) : StoryDetailsUiState<StoryBaseInfo>()
+    data class Error<out T>(val error: DataError) : StoryDetailsUiState<T>()
+}
 
-data class StoryDetailsLoadFullUiState(
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val success: Boolean = false
-)
+sealed class StoryReviewsUiState<out T> {
+    object Idle : StoryReviewsUiState<Nothing>()
+    object Loading : StoryReviewsUiState<Nothing>()
+    data class Success(val data: List<Review>) : StoryReviewsUiState<List<Review>>()
+    data class Error<out T>(val error: DataError) : StoryReviewsUiState<T>()
+}
+
+sealed class FullStoryLoadState<out T> {
+    object Idle : FullStoryLoadState<Nothing>()
+    object Loading : FullStoryLoadState<Nothing>()
+    object Success : FullStoryLoadState<Nothing>()
+    data class Error<out T>(val error: DataError) : FullStoryLoadState<T>()
+}
 
 class StoryDetailsViewModel(
-    private val observeStoryBaseByIdUseCase: ObserveStoryBaseByIdUseCase,
-    private val loadStoryFullByIdUseCase: LoadStoryFullByIdUseCase,
+    private val getStoryBaseUseCase: GetStoryBaseUseCase,
+    private val getReviewsStreamUseCase: GetReviewsStreamUseCase,
+    private val getStoryDetailsStreamUseCase: GetStoryDetailsStreamUseCase,
     private val savedStateHandle: SavedStateHandle
 ): ViewModel() {
-    private val _uiState = MutableStateFlow(StoryDetailsUiState())
+    private val _uiState = MutableStateFlow<StoryDetailsUiState<StoryBaseInfo>>(StoryDetailsUiState.Idle)
     val uiState = _uiState.asStateFlow()
 
-    private val _loadFullUiState = MutableStateFlow(StoryDetailsLoadFullUiState())
-    val loadFullUiState = _loadFullUiState.asStateFlow()
+    private val _loadFullState = MutableStateFlow<FullStoryLoadState<Nothing>>(FullStoryLoadState.Idle)
+    val loadFullState = _loadFullState.asStateFlow()
 
-    private var _storyId: Long? = savedStateHandle.get<Long>("storyId")
-    val storyId: Long get() = _storyId ?: -1L
+    private val _loadReviewsState = MutableStateFlow<StoryReviewsUiState<List<Review>>>(StoryReviewsUiState.Idle)
+    val loadReviewsState = _loadReviewsState.asStateFlow()
+
+    private val _appStatusBarUiState = MutableStateFlow<AppStatusBarUiState<DataError>>(AppStatusBarUiState.Idle)
+    val appStatusBarUiState = _appStatusBarUiState.asStateFlow()
+
+    private var _storyId: String? = savedStateHandle.get<String>("storyId")
+    val storyId: String get() = _storyId ?: ""
 
     init {
-        Log.d(
-            "StoryDetailsVM",
-            "Current storyId: $_storyId, SavedStateHandle: ${savedStateHandle.get<Long>("storyId")}"
-        )
-//        Log.d("load", "Current storyId: $_storyId, SavedStateHandle: ${savedStateHandle.get<Long>("storyId")}")
-
-        savedStateHandle["storyId"] = _storyId
-        _storyId?.let { observeStoryBaseByIdCatalog(it) }
+        attemptLoadBaseStory(storyId)
+        attemptLoadStoryReviews(storyId)
     }
 
-    fun attemptLoadStory() {
-        Log.d(
-            "StoryDetailsVM",
-            "Current storyId: $_storyId, SavedStateHandle: ${savedStateHandle.get<Long>("storyId")}"
-        )
-        savedStateHandle["storyId"] = _storyId
-        _storyId?.let { observeStoryBaseByIdCatalog(storyId) }
+    fun attemptLoadBaseStory(storyId: String?) {
+        storyId?.let { storyBaseStream(storyId) }
     }
 
-    private fun observeStoryBaseByIdCatalog(storyId: Long) {
+    fun attemptLoadStoryReviews(storyId: String?) {
+        storyId?.let { storyReviewsStreamByStoryId(storyId) }
+    }
+
+    private fun storyBaseStream(storyId: String) {
         viewModelScope.launch {
-            observeStoryBaseByIdUseCase(storyId = storyId)
-                .onStart { _uiState.update { it.copy(isLoading = true, error = null) } }
-                .catch { throwable ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = throwable.message ?: "Unknown error"
-                        )
-                    }
+            Log.d("SR_VM", storyId)
+            when (val result = getStoryBaseUseCase(storyId = storyId)) {
+                is ResultM.Success -> {
+                    Log.d("SR_VM", "SUCCESS")
+                    _uiState.value = StoryDetailsUiState.Success(result.data)
                 }
-                .collect { storyBase ->
-                    _uiState.update { it.copy(isLoading = false, story = storyBase) }
+
+                is ResultM.Failure -> {
+                    _uiState.value = StoryDetailsUiState.Error(error = result.error)
                 }
+
+                is ResultM.Loading -> { }
+            }
         }
     }
 
     fun loadStoryFullById() {
-        if (storyId == -1L) {
-            _loadFullUiState.update { it.copy(error = "Invalid story ID") }
-            return
-        }
+       _loadFullState.value = FullStoryLoadState.Loading
+        _appStatusBarUiState.value = AppStatusBarUiState.Loading
 
         viewModelScope.launch {
-            _loadFullUiState.update { it.copy(isLoading = true, error = null) } // ВНИМАНИЕ --> ПОМЕНЯТЬ!!!
-
-            try {
-                loadStoryFullByIdUseCase(storyId)
-                Log.d("StoryFullSuccess", "SUCCESS")
-                _loadFullUiState.update { it.copy(isLoading = false, success = true) }
-            } catch (e: Throwable) {
-                _loadFullUiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = e.message ?: "Failed to load story"
-                    )
+            getStoryDetailsStreamUseCase(storyId)
+                .collect { storyFull ->
+                    when (storyFull) {
+                        is ResultM.Success -> {
+                            _loadFullState.value = FullStoryLoadState.Success
+                            _appStatusBarUiState.value = AppStatusBarUiState.Idle
+                        }
+                        is ResultM.Failure -> {
+                            _loadFullState.value = FullStoryLoadState.Error(storyFull.error)
+                            _appStatusBarUiState.value = AppStatusBarUiState.Error(storyFull.error)
+                        }
+                        ResultM.Loading -> {
+                            _loadReviewsState.value = StoryReviewsUiState.Loading
+                        }
+                    }
                 }
             }
+    }
+
+    private fun storyReviewsStreamByStoryId(storyId: String) {
+        _loadReviewsState.value = StoryReviewsUiState.Loading
+        viewModelScope.launch {
+            getReviewsStreamUseCase(storyId)
+                .collect { reviews ->
+                    when (reviews) {
+                        is ResultM.Success -> {
+                            _loadReviewsState.value = StoryReviewsUiState.Success(reviews.data)
+                        }
+                        is ResultM.Failure -> {
+                            _loadReviewsState.value = StoryReviewsUiState.Error(reviews.error)
+                            _appStatusBarUiState.value = AppStatusBarUiState.Error(reviews.error)
+                        }
+                        ResultM.Loading -> {
+                            _loadReviewsState.value = StoryReviewsUiState.Loading
+                        }
+                    }
+                }
         }
+    }
+
+    fun resetLoadState() {
+        _loadFullState.value = FullStoryLoadState.Idle
     }
 }

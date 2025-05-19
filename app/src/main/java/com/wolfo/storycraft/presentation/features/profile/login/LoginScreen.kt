@@ -29,10 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.presentation.common.CustomScrollableColumn
 import com.wolfo.storycraft.presentation.common.GlassCard
 import com.wolfo.storycraft.presentation.common.ImmersiveBackground
 import com.wolfo.storycraft.presentation.features.profile.auth.AuthFormViewModel
+import com.wolfo.storycraft.presentation.features.profile.auth.AuthUiState
 import com.wolfo.storycraft.presentation.features.profile.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -88,11 +90,20 @@ fun LoginScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        if (uiState.error != null) {
-                            Text(
-                                text = uiState.error!!,
-                                color = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.padding(top = 8.dp))
+                        when (val state = uiState) {
+                            is AuthUiState.Error -> {
+                                val errorMessage = when (state.error) {
+                                    is DataError.Validation -> state.error.message
+                                    is DataError.Authentication -> "Ошибка аутентификации"
+                                    else -> "Произошла ошибка"
+                                }
+                                Text(
+                                    text = errorMessage ?: "Неизвестная ошибка",
+                                    color = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
+                            else -> {}
                         }
 
                         Button(
@@ -100,17 +111,17 @@ fun LoginScreen(
                                 formViewModel.loginName.value,
                                 formViewModel.loginPassword.value
                             ) },
-                            enabled = !uiState.isLoading,
+                            enabled = uiState !is AuthUiState.Loading,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = 24.dp),
                         shape = RoundedCornerShape(12.dp)
                         ) {
-                        if (uiState.isLoading) {
-                            CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
-                        } else {
-                            Text("Войти")
-                        }
+                            if (uiState is AuthUiState.Loading) {
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
+                            } else {
+                                Text("Войти")
+                            }
                     }
                     }
                 }

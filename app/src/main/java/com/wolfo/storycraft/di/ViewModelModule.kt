@@ -14,14 +14,14 @@ val viewModelModule = module {
 
 //    viewModelOf(::StoryListViewModel)
     viewModel<StoryListViewModel> {
-        StoryListViewModel(get(), get())
+        StoryListViewModel(get())
     }
 
     viewModel<StoryReaderViewModel> {
         StoryReaderViewModel(get(), get())
     }
     viewModel<StoryDetailsViewModel> {
-        StoryDetailsViewModel(get(), get(), get())
+        StoryDetailsViewModel(get(), get(), get(), get())
     }
 
     viewModel<AuthViewModel> {

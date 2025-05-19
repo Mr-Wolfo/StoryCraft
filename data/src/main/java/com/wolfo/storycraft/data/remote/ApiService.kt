@@ -1,10 +1,19 @@
 package com.wolfo.storycraft.data.remote
 
-import com.wolfo.storycraft.data.remote.dto.AuthResponseDto
-import com.wolfo.storycraft.data.remote.dto.RegisterRequestDto
-import com.wolfo.storycraft.data.remote.dto.StoryBaseDto
-import com.wolfo.storycraft.data.remote.dto.StoryDto
+import com.wolfo.storycraft.data.remote.dto.ReviewCreateRequestDto
+import com.wolfo.storycraft.data.remote.dto.ReviewDto
+import com.wolfo.storycraft.data.remote.dto.ReviewListResponseDto
+import com.wolfo.storycraft.data.remote.dto.ReviewUpdateRequestDto
+import com.wolfo.storycraft.data.remote.dto.UserAuthResponseDto
+import com.wolfo.storycraft.data.remote.dto.UserRegisterRequestDto
+import com.wolfo.storycraft.data.remote.dto.StoryBaseInfoDto
+import com.wolfo.storycraft.data.remote.dto.StoryFullDto
+import com.wolfo.storycraft.data.remote.dto.StoryListResponseDto
 import com.wolfo.storycraft.data.remote.dto.UserDto
+import com.wolfo.storycraft.data.remote.dto.UserSimpleDto
+import com.wolfo.storycraft.data.remote.dto.UserUpdateDto
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -14,50 +23,117 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
-    @GET("/api/v1/stories/")
-    suspend fun getStoryList() : Response<List<StoryBaseDto>>
 
-    @GET("/api/v1/stories/{story_id}")
-    suspend fun getStoryFull(@Path("story_id") storyId: Long): Response<StoryDto>
+    // --- Authentication ---
 
-    @POST("/api/v1/stories")
-    suspend fun putStory(@Body body: StoryDto) : Response<StoryDto>
+    @POST("api/v1/auth/register")
+    suspend fun registerUser(@Body userRegisterDto: UserRegisterRequestDto): Response<UserAuthResponseDto> // 201
 
-    @PUT("/api/v1/stories/{story_id}")
-    suspend fun updateStory(@Path("story_id") storyId: Long, @Body body: StoryDto): Response<StoryBaseDto>
-
-    @DELETE("/api/v1/stories/{story_id}")
-    suspend fun deleteStory(@Path("story_id") storyId: Long): Response<StoryBaseDto>
-
-    @POST("/api/v1/auth/register")
-    suspend fun register(@Body registerRequest: RegisterRequestDto): Response<AuthResponseDto>
-
+    // Логин использует application/x-www-form-urlencoded
     @FormUrlEncoded
-    @POST("/api/v1/auth/login")
-    suspend fun login( @Field("grant_type") grantType: String,
-                       @Field("username") username: String,
-                       @Field("password") password: String,
-                       @Field("scope") scope: String?,
-                       @Field("client_id") clientId: String?,
-                       @Field("client_secret") clientSecret: String?): Response<AuthResponseDto>
+    @POST("api/v1/auth/login")
+    suspend fun loginUser(
+        @Field("username") username: String,
+        @Field("password") password: String,
+        @Field("grant_type") grantType: String? = "password", // Опционально, если API требует
+        @Field("scope") scope: String? = "",
+        @Field("client_id") clientId: String? = null,
+        @Field("client_secret") clientSecret: String? = null
+    ): Response<UserAuthResponseDto> // 200
 
-    @GET("/api/v1/auth/users/me")
-    suspend fun getProfile(@Header("Authorization") token: String): Response<UserDto>
+    // Запрос на обновление токена - используется ТОЛЬКО внутри TokenAuthenticator
+    // Не выносите его в общий доступ репозиториев
+    // @POST("api/v1/auth/refresh")
+    // suspend fun refreshAccessToken(@Body body: RefreshTokenRequestDto): Response<TokenDto> // 200
 
-    companion object{
-        var apiService: ApiService? = null
-        fun getInstance(): ApiService {
-            if(apiService == null) {
-                apiService = Retrofit.Builder().baseUrl("https://localhost/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build().create(ApiService::class.java)
-            }
-            return apiService!!
-        }
-    }
+    // --- Users ---
+
+    @GET("api/v1/users/me")
+    suspend fun getCurrentUser(): Response<UserDto> // 200 (Требует токен)
+
+    @PATCH("api/v1/users/me")
+    suspend fun updateUserMe(@Body userUpdateDto: UserUpdateDto): Response<UserDto> // 200 (Требует токен)
+
+    @Multipart
+    @PUT("api/v1/users/me/avatar")
+    suspend fun updateUserAvatar(
+        @Part avatarFile: MultipartBody.Part // Файл аватара
+    ): Response<UserDto> // 200 (Требует токен)
+
+    @GET("api/v1/users/{user_id}/profile")
+    suspend fun getUserProfile(@Path("user_id") userId: String): Response<UserSimpleDto> // 200
+
+    // --- Stories ---
+
+    @GET("api/v1/stories/")
+    suspend fun getStories(
+        @Query("skip") skip: Int = 0,
+        @Query("limit") limit: Int = 10,
+        @Query("sort_by") sortBy: String? = null, // "published_time", "rating", "views", "title"
+        @Query("sort_order") sortOrder: String? = null, // "asc", "desc"
+        @Query("search_query") searchQuery: String? = null,
+        @Query("author_username") authorUsername: String? = null,
+        // Список тегов передается как несколько параметров с одинаковым именем
+        @Query("tag_names") tagNames: List<String>? = null
+    ): Response<StoryListResponseDto> // 200
+
+    @Multipart
+    @POST("api/v1/stories/")
+    suspend fun createStory(
+        @Part("story_data") storyData: RequestBody, // JSON строка с данными истории
+        @Part coverImageFile: MultipartBody.Part? // Опциональный файл обложки
+        // Возможно, понадобится @PartMap для других файлов, если API их ожидает
+    ): Response<StoryFullDto> // 201 (Требует токен)
+
+    @GET("api/v1/stories/{story_id}")
+    suspend fun getStoryById(@Path("story_id") storyId: String): Response<StoryFullDto> // 200
+
+    @Multipart
+    @PATCH("api/v1/stories/{story_id}")
+    suspend fun updateStory(
+        @Path("story_id") storyId: String,
+        @Part("story_data") storyData: RequestBody?, // JSON строка с обновляемыми полями
+        @Part coverImageFile: MultipartBody.Part? // Опциональный новый файл обложки
+    ): Response<StoryFullDto> // 200 (Требует токен)
+
+    @DELETE("api/v1/stories/{story_id}")
+    suspend fun deleteStory(@Path("story_id") storyId: String): Response<Unit> // 204 (Требует токен)
+
+    // --- Reviews ---
+
+    @GET("api/v1/stories/{story_id}/reviews")
+    suspend fun getReviewsForStory(
+        @Path("story_id") storyId: String,
+        @Query("skip") skip: Int = 0,
+        @Query("limit") limit: Int = 10
+    ): Response<ReviewListResponseDto> // 200
+
+    @POST("api/v1/stories/{story_id}/reviews")
+    suspend fun createReview(
+        @Path("story_id") storyId: String,
+        // OpenAPI ожидает story_id в теле, хотя он есть в пути. Передаем, если API требует.
+        @Body reviewCreateDto: ReviewCreateRequestDto
+    ): Response<ReviewDto> // 201 (Требует токен)
+
+    @GET("api/v1/reviews/{review_id}")
+    suspend fun getReviewById(@Path("review_id") reviewId: String): Response<ReviewDto> // 200
+
+    @PATCH("api/v1/reviews/{review_id}")
+    suspend fun updateReview(
+        @Path("review_id") reviewId: String,
+        @Body reviewUpdateDto: ReviewUpdateRequestDto
+    ): Response<ReviewDto> // 200 (Требует токен)
+
+    @DELETE("api/v1/reviews/{review_id}")
+    suspend fun deleteReview(@Path("review_id") reviewId: String): Response<Unit> // 204 (Требует токен)
+
 }

@@ -1,10 +1,10 @@
 package com.wolfo.storycraft.domain.model
 
 data class Page(
-    val id: Long,
-    val storyId: Long,
+    val id: String, // UUID
     val pageText: String,
-    val coverImageUrl: String?,
+    val imageUrl: String?,
     val isEndingPage: Boolean,
-    val choices: List<Choice>
+    val storyId: String, // UUID
+    val choices: List<Choice> = emptyList()
 )

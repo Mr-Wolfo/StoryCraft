@@ -1,35 +1,31 @@
 package com.wolfo.storycraft.data.local.data_store
 
-import android.content.Context
-import android.util.Log
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
-class AuthTokenManager(private val context: Context) {
-    private val Context.dataStore by preferencesDataStore(name = "auth_token")
+// Модель для хранения токенов
+data class AuthTokens(
+    val accessToken: String?,
+    val refreshToken: String?
+)
 
-    private val authTokenKey = stringPreferencesKey("auth_token")
+interface AuthTokenManager {
+    // Потоки для наблюдения за токенами (например, для UI)
+    val tokensFlow: Flow<AuthTokens>
+    val userIdFlow: Flow<String?>
 
-    suspend fun saveToken(token: String) {
-        context.dataStore.edit { preferences ->
-            preferences[authTokenKey] = token
-            Log.d("TOKEN", "Save")
-        }
-    }
+    suspend fun saveUserId(userId: String)
+    suspend fun getUserId(): String?
+    suspend fun clearUserId()
 
-    suspend fun getToken(): Flow<String?> {
-        val token = context.dataStore.data.map { preferences ->
-            preferences[authTokenKey]
-        }
-        return token
-    }
+    // Функции для получения текущих токенов (могут блокировать поток)
+    suspend fun getAccessToken(): String?
+    suspend fun getRefreshToken(): String?
+    suspend fun getTokens(): AuthTokens
 
-    suspend fun clearToken() {
-        context.dataStore.edit { preferences ->
-            preferences.remove(authTokenKey)
-        }
-    }
+    // Функция для синхронного получения токенов (для Authenticator)
+    fun getTokensSync(): AuthTokens
+
+    // Функции для сохранения и очистки токенов
+    suspend fun saveTokens(tokens: AuthTokens)
+    suspend fun clearTokens()
 }

@@ -12,14 +12,14 @@ sealed class Screen(
     data object StoryView : Screen() {
 
         @Serializable
-        data class Details(val storyId: Long?) : Screen()
+        data class Details(val storyId: String?) : Screen()
 
         @Serializable
-        data class Reader(val storyId: Long) : Screen()
+        data class Reader(val storyId: String) : Screen()
     }
 
     @Serializable
-    data class StoryEditor(val storyId: Long?) : Screen()
+    data class StoryEditor(val storyId: String?) : Screen()
 
     @Serializable
     data object Profile : Screen() {

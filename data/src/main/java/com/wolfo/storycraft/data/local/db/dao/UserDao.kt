@@ -10,11 +10,21 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun saveUser(user: UserEntity)
+    suspend fun insertOrUpdateUser(user: UserEntity)
 
-    @Query("SELECT * FROM user_profile LIMIT 1")
-    fun observeUser(): Flow<UserEntity?>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdateUsers(users: List<UserEntity>)
 
-    @Query("DELETE FROM user_profile")
-    suspend fun clearUser()
+    @Query("SELECT * FROM users WHERE id = :userId LIMIT 1")
+    suspend fun getUserById(userId: String): UserEntity?
+
+    @Query("SELECT * FROM users WHERE id = :userId LIMIT 1")
+    fun getUserByIdFlow(userId: String): Flow<UserEntity?>
+
+    // Используется для получения авторов в связях, не для прямого удаления
+    // @Query("DELETE FROM users WHERE id = :userId")
+    // suspend fun deleteUserById(userId: String)
+
+    @Query("DELETE FROM users")
+    suspend fun clearAllUsers() // Осторожно: удалит всех юзеров/авторов
 }

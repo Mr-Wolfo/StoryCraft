@@ -1,17 +1,36 @@
 package com.wolfo.storycraft.di
 
 import com.wolfo.storycraft.data.remote.ApiService
+import com.wolfo.storycraft.data.remote.AuthInterceptor
+import com.wolfo.storycraft.data.remote.TokenAuthenticator
 import okhttp3.OkHttpClient
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
+
+private const val BASE_URL = "http://192.168.149.229:8000" // ЛОКАЛЬНЫЙ
 
 val apiModule = module {
 
-    val BASE_URL = "http://192.168.45.229:8000" // ЛОКАЛЬНЫЙ
+
+    single<Retrofit.Builder> {
+        Retrofit.Builder()
+    }
 
     single<OkHttpClient> {
-        OkHttpClient.Builder().build()
+
+        OkHttpClient.Builder()
+            .addInterceptor(AuthInterceptor(get())) // Добавляем интерцептор
+            .authenticator(TokenAuthenticator(
+                tokenManager = get(),
+                retrofitBuilder = get(),
+                baseUrl = BASE_URL
+            )) // Добавляем аутентификатор
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
     }
 
     single<Retrofit> {

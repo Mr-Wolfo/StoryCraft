@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.wolfo.storycraft.data"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 28
@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.converter.gson)
     implementation(libs.retrofit2.retrofit)
+    implementation(libs.okhttp)
     implementation(project(path = ":domain"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

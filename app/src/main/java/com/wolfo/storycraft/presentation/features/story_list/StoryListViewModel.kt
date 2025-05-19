@@ -3,54 +3,75 @@ package com.wolfo.storycraft.presentation.features.story_list
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wolfo.storycraft.domain.model.StoryBase
-import com.wolfo.storycraft.domain.usecase.ObserveStoriesUseCase
-import com.wolfo.storycraft.domain.usecase.RefreshStoriesUseCase
+import com.wolfo.storycraft.domain.DataError
+import com.wolfo.storycraft.domain.ResultM
+import com.wolfo.storycraft.domain.model.StoryBaseInfo
+import com.wolfo.storycraft.domain.usecase.story.GetStoriesStreamUseCase
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class StoryListUiState(
-    val isLoading: Boolean = false,
-    val stories: List<StoryBase> = emptyList(),
-    val error: String? = null
-)
+sealed class AppStatusBarUiState<out T> {
+    object Idle : AppStatusBarUiState<Nothing>()
+    object Loading : AppStatusBarUiState<Nothing>()
+    data class Error<out T>(val error: DataError) : AppStatusBarUiState<T>()
+}
+
+sealed class StoryListUiState<out T> {
+    object Idle : StoryListUiState<Nothing>()
+    object Loading : StoryListUiState<Nothing>()
+    data class Success(val data: List<StoryBaseInfo>) : StoryListUiState<List<StoryBaseInfo>>()
+    data class Error<out T>(val error: DataError) : StoryListUiState<T>()
+}
 
 class StoryListViewModel(
-    private val observeStoriesUseCase: ObserveStoriesUseCase,
-    private val refreshStoriesUseCase: RefreshStoriesUseCase
+    private val getStoriesStreamUseCase: GetStoriesStreamUseCase
 ): ViewModel() {
-    private val _uiState = MutableStateFlow(StoryListUiState(isLoading = true))
-    val uiState: StateFlow<StoryListUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<StoryListUiState<List<StoryBaseInfo>>>(StoryListUiState.Idle)
+    val uiState = _uiState.asStateFlow()
+
+    private val _appStatusBarUiState = MutableStateFlow<AppStatusBarUiState<DataError>>(AppStatusBarUiState.Idle)
+    val appStatusBarUiState = _appStatusBarUiState.asStateFlow()
+
+    private var currentJob: Job? = null
 
     init {
-        loadStoriesCatalog()
+        storiesStream()
     }
 
     fun refreshStoriesCatalog() {
-        viewModelScope.launch {
-            try {
-                refreshStoriesUseCase()
-            } catch (e: Exception) {
-                Log.e("StoryList", "RefreshError: $e")
-            }
-        }
+        storiesStream(true)
     }
 
-    private fun loadStoriesCatalog() {
-        viewModelScope.launch {
-            observeStoriesUseCase()
-                .onStart { _uiState.update { it.copy(isLoading = true, error = null) } }
-                .catch { throwable ->
-                    Log.d("ObserveStoryListVM", "Error $throwable")
-                    _uiState.update { it.copy(isLoading = false, error = throwable.message ?: "Unknown error") }
-                }
+    private fun storiesStream(forceRefresh: Boolean = false) {
+        Log.d("SL_VM", "THERE")
+        _uiState.value = StoryListUiState.Loading
+        _appStatusBarUiState.value = AppStatusBarUiState.Loading
+
+        currentJob?.cancel()
+
+        currentJob = viewModelScope.launch {
+            getStoriesStreamUseCase(forceRefresh)
                 .collect { stories ->
-                    _uiState.update { it.copy(isLoading = false, stories = stories) }
+                    when (stories) {
+                        is ResultM.Success -> {
+                            _uiState.value = StoryListUiState.Success(stories.data)
+                            _appStatusBarUiState.value = AppStatusBarUiState.Idle
+                        }
+                        is ResultM.Failure -> {
+                            if (stories.cachedData != null) {
+                                _uiState.value = StoryListUiState.Success(
+                                    data = stories.cachedData as List<StoryBaseInfo>
+                                )
+                            }
+                            _appStatusBarUiState.value = AppStatusBarUiState.Error(error = stories.error)
+
+                        }
+                        ResultM.Loading -> {
+                            _appStatusBarUiState.value = AppStatusBarUiState.Loading
+                        }
+                    }
                 }
         }
     }
