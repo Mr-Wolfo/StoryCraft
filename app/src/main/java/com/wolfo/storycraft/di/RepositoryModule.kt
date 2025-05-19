@@ -31,7 +31,7 @@ val repositoryModule = module {
     }
 
     single<StoryRepository> {
-        StoryRepositoryImpl(get(), get(), get(), get())
+        StoryRepositoryImpl(get(), get(), get(), get(), get())
     }
 
     single<UserRepository> {
