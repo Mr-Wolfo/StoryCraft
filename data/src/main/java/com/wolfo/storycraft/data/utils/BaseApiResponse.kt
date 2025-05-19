@@ -1,7 +1,6 @@
 package com.wolfo.storycraft.data.utils
 
 import com.wolfo.storycraft.domain.DataError
-import retrofit2.Response
 import java.io.IOException
 
 /**

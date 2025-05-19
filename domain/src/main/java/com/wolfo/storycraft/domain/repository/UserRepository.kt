@@ -1,8 +1,6 @@
 package com.wolfo.storycraft.domain.repository
 
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.AuthRequest
-import com.wolfo.storycraft.domain.model.RegisterRequest
 import com.wolfo.storycraft.domain.model.User
 import com.wolfo.storycraft.domain.model.UserSimple
 import com.wolfo.storycraft.domain.model.UserUpdate

@@ -1,22 +1,13 @@
 package com.wolfo.storycraft.data.local.db.dao
 
 import androidx.room.Dao
-import androidx.room.Embedded
 import androidx.room.Insert
-import androidx.room.Junction
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Relation
 import androidx.room.Transaction
-import com.wolfo.storycraft.data.local.db.entity.AuthorEntity
-import com.wolfo.storycraft.data.local.db.entity.ChoiceEntity
-import com.wolfo.storycraft.data.local.db.entity.PageEntity
-import com.wolfo.storycraft.data.local.db.entity.ReviewEntity
 import com.wolfo.storycraft.data.local.db.entity.StoryEntity
 import com.wolfo.storycraft.data.local.db.entity.StoryTagCrossRef
 import com.wolfo.storycraft.data.local.db.entity.StoryWithAuthorAndTags
-import com.wolfo.storycraft.data.local.db.entity.TagEntity
-import com.wolfo.storycraft.data.local.db.entity.UserEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

@@ -5,9 +5,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
-import com.wolfo.storycraft.data.local.db.DateConverter
-import java.util.Date
 
 
 @Entity(

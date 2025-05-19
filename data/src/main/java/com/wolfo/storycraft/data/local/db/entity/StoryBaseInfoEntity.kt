@@ -6,7 +6,6 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.wolfo.storycraft.data.local.db.AuthorConverter
 import com.wolfo.storycraft.data.local.db.ListConverter
-import java.util.Date
 
 @TypeConverters(AuthorConverter::class, ListConverter::class)
 @Entity(tableName = "stories")

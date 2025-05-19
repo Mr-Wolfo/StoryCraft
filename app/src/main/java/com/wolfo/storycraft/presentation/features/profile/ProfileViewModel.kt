@@ -4,11 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.StoryBaseInfo
 import com.wolfo.storycraft.domain.model.User
 import com.wolfo.storycraft.domain.usecase.user.GetCurrentUserStreamUseCase
 import com.wolfo.storycraft.presentation.features.story_list.AppStatusBarUiState
-import com.wolfo.storycraft.presentation.features.story_list.StoryListUiState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

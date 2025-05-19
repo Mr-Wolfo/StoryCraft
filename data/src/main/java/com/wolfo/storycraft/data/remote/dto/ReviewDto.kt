@@ -1,7 +1,6 @@
 package com.wolfo.storycraft.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
-import java.util.Date
 
 data class ReviewDto(
     @SerializedName("id") val id: String,

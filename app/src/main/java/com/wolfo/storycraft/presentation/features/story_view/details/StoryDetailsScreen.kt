@@ -7,10 +7,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,7 +69,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.fastForEachIndexed
 import coil3.compose.AsyncImage
 import com.wolfo.storycraft.R
 import com.wolfo.storycraft.domain.model.Review
@@ -86,13 +83,8 @@ import com.wolfo.storycraft.presentation.common.LoadingBar
 import com.wolfo.storycraft.presentation.common.PremiumInfoChip
 import com.wolfo.storycraft.presentation.common.formatNumber
 import com.wolfo.storycraft.presentation.features.story_list.AppStatusBarUiState
-import com.wolfo.storycraft.presentation.features.story_list.PremiumBadge
-import com.wolfo.storycraft.presentation.features.story_list.StoryMetaInfo
-import com.wolfo.storycraft.presentation.features.story_list.TagChip
-import com.wolfo.storycraft.presentation.features.story_view.details.StoryDetailsUiState
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDateTime
-import kotlin.collections.List
 
 @Composable
 fun StoryDetailsScreen(

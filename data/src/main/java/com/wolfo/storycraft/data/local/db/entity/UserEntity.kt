@@ -3,11 +3,6 @@ package com.wolfo.storycraft.data.local.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.google.gson.annotations.SerializedName
-import com.wolfo.storycraft.data.remote.dto.StoryBaseInfoDto
-import java.sql.Time
-import java.time.LocalDateTime
-import java.util.Date
 
 @Entity(tableName = "users") // Используем 'users' для хранения всех пользователей/авторов
 data class UserEntity(

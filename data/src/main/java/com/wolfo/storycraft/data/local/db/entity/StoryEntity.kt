@@ -5,15 +5,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverter
-import androidx.room.TypeConverters
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.wolfo.storycraft.data.local.db.DateConverter
-import com.wolfo.storycraft.data.local.db.ListConverter
-import com.wolfo.storycraft.data.remote.dto.PageDto
-import java.time.LocalDateTime
-import java.util.Date
 
 @Entity(
     tableName = "stories",

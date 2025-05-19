@@ -13,7 +13,6 @@ import com.wolfo.storycraft.data.local.db.dao.StoryDao
 import com.wolfo.storycraft.data.local.db.dao.StoryTagCrossRefDao
 import com.wolfo.storycraft.data.local.db.dao.TagDao
 import com.wolfo.storycraft.data.local.db.dao.UserDao
-import com.wolfo.storycraft.data.local.db.entity.AuthorEntity
 import com.wolfo.storycraft.data.local.db.entity.ChoiceEntity
 import com.wolfo.storycraft.data.local.db.entity.PageEntity
 import com.wolfo.storycraft.data.local.db.entity.ReviewEntity
