@@ -1,4 +1,6 @@
-package com.wolfo.storycraft.domain.model
+package com.wolfo.storycraft.domain.model.story
+
+import com.wolfo.storycraft.domain.model.user.UserSimple
 
 data class StoryFull(
     val id: String,

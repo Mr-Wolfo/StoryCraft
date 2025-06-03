@@ -1,5 +1,6 @@
 package com.wolfo.storycraft.presentation.common
 
+import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -12,6 +13,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,12 +33,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
@@ -46,40 +51,68 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.wolfo.storycraft.R
 
 // Кастомная стеклянная карточка
 @Composable
 fun GlassCard(
     modifier: Modifier = Modifier,
+    containerAlpha: Float = 0.7f,
     content: @Composable () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
 
     Card(
-        modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = colorScheme.surface.copy(alpha = 0.7f)
+            containerColor = colorScheme.surface.copy(alpha = containerAlpha)
         ),
         border = BorderStroke(
             1.dp,
             colorScheme.outline.copy(alpha = 0.2f)
-        )
+        ),
+        modifier = modifier
+
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
             content()
         }
+    }
+}
+
+@Composable
+fun TagChip(tag: String, color: Color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f)) {
+    Box(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.small)
+            .background(Color.White.copy(alpha = 0.2f))
+            .border(
+                width = 1.dp,
+                color = Color.White.copy(alpha = 0.4f),
+                shape = MaterialTheme.shapes.small
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Text(
+            text = tag,
+            style = MaterialTheme.typography.labelSmall.copy(
+                color = Color.White
+            )
+        )
     }
 }
 
@@ -129,6 +162,7 @@ fun PremiumInfoChip(icon: ImageVector,
         )
     }
 }
+
 
 // Кастомная колонка с прокруткой
 @Composable
@@ -180,6 +214,31 @@ fun ImmersiveBackground(scrollState: ScrollState? = null) {
 }
 
 @Composable
+fun BackgroundImage(painter: Painter) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painter,
+            contentDescription = "Background Image",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        0f to Color.Transparent,
+                        0.8f to MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                        1f to MaterialTheme.colorScheme.surface
+                    )
+                )
+        )
+    }
+}
+
+@Composable
 fun Loading(
 ) {
     Box(
@@ -203,7 +262,6 @@ fun LoadingBar(
         Surface(
             modifier = Modifier
                 .padding(16.dp),
-            shadowElevation = 14.dp,
             color = Color.Transparent
         ) {
             val infiniteTransition = rememberInfiniteTransition()
@@ -216,15 +274,55 @@ fun LoadingBar(
                 )
             )
 
+
             Icon(
-                    painter = rememberVectorPainter(Icons.Default.Favorite),
+                    painter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.wmatrix_logo)), // тут
                     modifier = Modifier.graphicsLayer() {
                         rotationY = rotation
                     }
                         .size(50.dp),
                     contentDescription = "Loading",
-                    tint = Color.Red
+                    tint = MaterialTheme.colorScheme.secondary
             )
+        }
+    }
+}
+
+@Composable
+fun SuccessBottomMessage(
+    message: String,
+    isVisible: Boolean,
+    onDismiss: () -> Unit
+) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically { height -> height } + fadeIn(),
+        exit = slideOutVertically { height -> height } + fadeOut()
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = message, style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Закрыть")
+                }
+            }
         }
     }
 }

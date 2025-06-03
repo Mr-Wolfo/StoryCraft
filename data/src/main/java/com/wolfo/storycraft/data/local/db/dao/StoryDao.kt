@@ -19,7 +19,7 @@ interface StoryDao {
     suspend fun insertOrUpdateStories(stories: List<StoryEntity>)
 
     @Transaction // Обязательно для загрузки связей (@Relation)
-    @Query("SELECT * FROM stories ORDER BY published_time DESC") // Уточните поле сортировки, если имя в Entity другое
+    @Query("SELECT * FROM stories")
     fun getStoriesWithAuthorAndTagsStream(): Flow<List<StoryWithAuthorAndTags>>
 
     // Получаем базовую историю с автором и тегами

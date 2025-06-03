@@ -6,6 +6,7 @@
 
     <application
         android:name=".StoryCraftApp"
+        android:process=":main"
         android:windowSoftInputMode="adjustResize"
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
@@ -17,6 +18,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StoryCraft"
         tools:targetApi="31">
+
+        <meta-data
+            android:name="com.yandex.mobile.ads.AUTOMATIC_SDK_INITIALIZATION"
+            android:value="false" />
+
+        <meta-data
+            android:name="com.yandex.mobile.ads.APPLICATION_ID"
+            android:value="15683474"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

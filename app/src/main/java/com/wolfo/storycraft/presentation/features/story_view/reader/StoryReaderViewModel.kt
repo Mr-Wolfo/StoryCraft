@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.StoryFull
+import com.wolfo.storycraft.domain.model.story.StoryFull
 import com.wolfo.storycraft.domain.usecase.story.GetStoryDetailsStreamUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

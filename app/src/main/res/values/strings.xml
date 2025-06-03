@@ -4,4 +4,72 @@
     <string name="screen_title_story_editor">Редактор</string>
     <string name="screen_title_story_list">Истории</string>
     <string name="screen_title_profile">Профиль</string>
+
+
+    <!-- Story Editor -->
+    <string name="story_editor">Редактор Историй</string>
+    <string name="story_editor_title_editing">Редактирование Истории</string>
+    <string name="checking_authentication">Проверка авторизации…</string>
+    <string name="story_editor_not_authenticated_title">Войдите, чтобы создавать истории</string>
+    <string name="story_editor_not_authenticated_message">Для создания и редактирования историй необходимо войти в аккаунт.</string>
+    <string name="login_or_register">Войти или Зарегистрироваться</string>
+    <string name="loading_stories">Загрузка историй…</string>
+    <string name="story_editor_drafts_title">Мои Черновики</string>
+    <string name="story_editor_no_drafts">У вас пока нет черновиков историй.\nНачните новую!</string>
+    <string name="story_editor_create_first_draft">Создать первый черновик</string>
+    <string name="story_editor_create_new_draft">Создать новый черновик</string>
+    <string name="open_draft">Открыть черновик</string>
+
+    <!-- Editor Content -->
+    <string name="story_editor_basic_info">Основная информация</string>
+    <string name="story_editor_title">Название</string>
+    <string name="story_editor_description">Описание</string>
+    <string name="story_editor_tags">Теги (через запятую)</string>
+    <string name="story_editor_cover_image">Изображение обложки</string>
+    <string name="select_image">Выбрать изображение</string>
+    <string name="remove_image">Удалить изображение</string>
+
+    <string name="story_editor_pages_title">Страницы Истории</string>
+    <string name="story_editor_page_number">Страница %d</string>
+    <string name="remove_page">Удалить страницу</string>
+    <string name="story_editor_page_text">Текст страницы</string>
+    <string name="story_editor_page_image">Изображение страницы</string>
+    <string name="story_editor_is_ending_page">Это концовка?</string>
+    <string name="story_editor_choices_title">Выборы</string>
+    <string name="story_editor_choice_text">Текст выбора</string>
+    <string name="story_editor_select_page">Выбрать страницу</string>
+    <string name="remove_choice">Удалить выбор</string>
+    <string name="story_editor_add_choice">Добавить выбор</string>
+    <string name="story_editor_add_page">Добавить страницу</string>
+
+    <!-- Target Page Picker -->
+    <string name="story_editor_select_target_page_title">Выберите целевую страницу</string>
+    <string name="story_editor_select_target_page_none">Нет (отключить выбор)</string>
+    <string name="story_editor_empty_page">Пустая страница</string>
+    <string name="cancel">Отмена</string>
+
+    <!-- Status Bar / Actions -->
+    <string name="save_draft">Сохранить черновик</string>
+    <string name="publish">Опубликовать</string>
+    <string name="back">Назад</string>
+    <string name="draft_saved_success">Черновик сохранен</string>
+    <string name="draft_saving_in_progress">Сохранение черновика…</string>
+    <string name="draft_save_error">Ошибка сохранения: %s</string>
+    <string name="publish_in_progress">Публикация истории…</string>
+    <string name="publish_error">Ошибка публикации: %s</string>
+    <string name="general_error">Ошибка: %s</string>
+    <string name="unknown_error">Неизвестная ошибка</string>
+
+    <!-- Validation / Specific Errors -->
+    <string name="error_no_draft_to_publish">Нет черновика для публикации.</string>
+    <string name="error_preparing_files">Не удалось подготовить файлы для публикации: %s</string>
+    <string name="error_processing_image_file">Ошибка обработки изображения (%s): %s</string>
+    <string name="validation_failed">Ошибка валидации.</string>
+    <string name="file_error">Ошибка файла.</string>
+
+    <!-- Publish Success -->
+    <string name="story_editor_publish_success_title">История опубликована!</string>
+    <string name="story_editor_publish_success_message">Ваша история успешно опубликована и теперь доступна для чтения.</string>
+    <string name="story_editor_view_published_story">Посмотреть историю</string>
+
 </resources>

@@ -53,10 +53,12 @@ android {
 dependencies {
     implementation(project(path = ":data"))
     implementation(project(path = ":domain"))
+    implementation(libs.mobileads)
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.cardview)
     ksp(libs.androidx.room.compiler)
     implementation(libs.okhttp)
     implementation(libs.converter.gson)

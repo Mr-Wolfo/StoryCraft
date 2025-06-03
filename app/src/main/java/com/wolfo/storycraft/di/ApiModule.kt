@@ -9,10 +9,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL = "http://192.168.149.229:8000" // ЛОКАЛЬНЫЙ
+private const val BASE_URL = "http://192.168.237.229:8000" // ЛОКАЛЬНЫЙ
 
 val apiModule = module {
-
 
     single<Retrofit.Builder> {
         Retrofit.Builder()

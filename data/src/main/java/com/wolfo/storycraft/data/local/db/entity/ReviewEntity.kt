@@ -20,7 +20,7 @@ import androidx.room.PrimaryKey
             entity = UserEntity::class, // Связь с автором отзыва
             parentColumns = ["id"],
             childColumns = ["user_id"],
-            onDelete = ForeignKey.CASCADE // Или SET_NULL, если юзер может быть удален, а отзыв останется
+            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [Index("story_id"), Index("user_id")]

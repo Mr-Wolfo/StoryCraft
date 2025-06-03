@@ -6,15 +6,20 @@ import com.wolfo.storycraft.domain.usecase.auth.LoginUserUseCase
 import com.wolfo.storycraft.domain.usecase.auth.LogoutUserUseCase
 import com.wolfo.storycraft.domain.usecase.auth.RegisterUserUseCase
 import com.wolfo.storycraft.domain.usecase.story.CreateReviewUseCase
-import com.wolfo.storycraft.domain.usecase.story.CreateStoryUseCase
 import com.wolfo.storycraft.domain.usecase.story.DeleteReviewUseCase
+import com.wolfo.storycraft.domain.usecase.story.DeleteStoryDraftUseCase
 import com.wolfo.storycraft.domain.usecase.story.DeleteStoryUseCase
+import com.wolfo.storycraft.domain.usecase.story.GetDraftStoriesUseCase
 import com.wolfo.storycraft.domain.usecase.story.GetReviewsStreamUseCase
 import com.wolfo.storycraft.domain.usecase.story.GetStoriesStreamUseCase
 import com.wolfo.storycraft.domain.usecase.story.GetStoryBaseUseCase
 import com.wolfo.storycraft.domain.usecase.story.GetStoryDetailsStreamUseCase
+import com.wolfo.storycraft.domain.usecase.story.GetStoryDraftUseCase
+import com.wolfo.storycraft.domain.usecase.story.PublishStoryUseCase
+import com.wolfo.storycraft.domain.usecase.story.SaveStoryDraftUseCase
 import com.wolfo.storycraft.domain.usecase.story.UpdateReviewUseCase
 import com.wolfo.storycraft.domain.usecase.story.UpdateStoryUseCase
+import com.wolfo.storycraft.domain.usecase.user.GetCurrentUserIdUseCase
 import com.wolfo.storycraft.domain.usecase.user.GetCurrentUserStreamUseCase
 import com.wolfo.storycraft.domain.usecase.user.GetUserProfileUseCase
 import com.wolfo.storycraft.domain.usecase.user.RefreshCurrentUserUseCase
@@ -41,9 +46,7 @@ val useCaseModule = module {
     factory<CreateReviewUseCase> {
         CreateReviewUseCase(get())
     }
-    factory<CreateStoryUseCase> {
-        CreateStoryUseCase(get())
-    }
+
     factory<DeleteReviewUseCase> {
         DeleteReviewUseCase(get())
     }
@@ -65,6 +68,21 @@ val useCaseModule = module {
     factory<UpdateReviewUseCase> {
         UpdateReviewUseCase(get())
     }
+    factory<DeleteStoryDraftUseCase> {
+        DeleteStoryDraftUseCase(get())
+    }
+    factory<GetDraftStoriesUseCase> {
+        GetDraftStoriesUseCase(get(), get())
+    }
+    factory<GetStoryDraftUseCase> {
+        GetStoryDraftUseCase(get())
+    }
+    factory<PublishStoryUseCase> {
+        PublishStoryUseCase(get(), get())
+    }
+    factory<SaveStoryDraftUseCase> {
+        SaveStoryDraftUseCase(get())
+    }
     factory<UpdateStoryUseCase> {
         UpdateStoryUseCase(get())
     }
@@ -82,5 +100,8 @@ val useCaseModule = module {
     }
     factory<UpdateCurrentUserAvatarUseCase> {
         UpdateCurrentUserAvatarUseCase(get())
+    }
+    factory<GetCurrentUserIdUseCase> {
+        GetCurrentUserIdUseCase(get())
     }
 }

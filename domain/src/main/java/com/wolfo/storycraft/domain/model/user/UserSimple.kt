@@ -1,4 +1,4 @@
-package com.wolfo.storycraft.domain.model
+package com.wolfo.storycraft.domain.model.user
 
 data class UserSimple(
     val id: String,

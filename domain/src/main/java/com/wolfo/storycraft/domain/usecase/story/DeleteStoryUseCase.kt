@@ -9,7 +9,7 @@ import com.wolfo.storycraft.domain.repository.StoryRepository
 class DeleteStoryUseCase(
     private val storyRepository: StoryRepository
 ) {
-    suspend operator fun invoke(storyId: String): ResultM<Unit> { // Используем Result из репозитория
+    suspend operator fun invoke(storyId: String): ResultM<Unit> {
         return storyRepository.deleteStory(storyId)
     }
 }

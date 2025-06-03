@@ -1,9 +1,9 @@
 package com.wolfo.storycraft.domain.repository
 
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.User
-import com.wolfo.storycraft.domain.model.UserSimple
-import com.wolfo.storycraft.domain.model.UserUpdate
+import com.wolfo.storycraft.domain.model.user.User
+import com.wolfo.storycraft.domain.model.user.UserSimple
+import com.wolfo.storycraft.domain.model.user.UserUpdate
 import kotlinx.coroutines.flow.Flow
 import java.io.File
 

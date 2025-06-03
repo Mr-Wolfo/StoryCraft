@@ -1,34 +1,52 @@
 package com.wolfo.storycraft.data.mapper
 
+import android.net.Uri
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.wolfo.storycraft.data.local.db.dao.StoryBaseInfoDraft
+import com.wolfo.storycraft.data.local.db.entity.ChoiceDraftEntity
 import com.wolfo.storycraft.data.local.db.entity.ChoiceEntity
+import com.wolfo.storycraft.data.local.db.entity.PageDraftEntity
+import com.wolfo.storycraft.data.local.db.entity.PageDraftWithChoices
 import com.wolfo.storycraft.data.local.db.entity.PageEntity
 import com.wolfo.storycraft.data.local.db.entity.PageWithChoices
 import com.wolfo.storycraft.data.local.db.entity.ReviewEntity
 import com.wolfo.storycraft.data.local.db.entity.ReviewWithAuthor
+import com.wolfo.storycraft.data.local.db.entity.StoryDraftEntity
+import com.wolfo.storycraft.data.local.db.entity.StoryDraftWithPagesAndChoices
 import com.wolfo.storycraft.data.local.db.entity.StoryEntity
 import com.wolfo.storycraft.data.local.db.entity.StoryWithAuthorAndTags
 import com.wolfo.storycraft.data.local.db.entity.TagEntity
 import com.wolfo.storycraft.data.local.db.entity.UserEntity
+import com.wolfo.storycraft.data.remote.dto.ChoiceCreateDto
 import com.wolfo.storycraft.data.remote.dto.ChoiceDto
+import com.wolfo.storycraft.data.remote.dto.PageCreateDto
 import com.wolfo.storycraft.data.remote.dto.PageDto
 import com.wolfo.storycraft.data.remote.dto.ReviewDto
 import com.wolfo.storycraft.data.remote.dto.StoryBaseInfoDto
+import com.wolfo.storycraft.data.remote.dto.StoryCreateJsonDataDto
 import com.wolfo.storycraft.data.remote.dto.StoryFullDto
 import com.wolfo.storycraft.data.remote.dto.TagDto
 import com.wolfo.storycraft.data.remote.dto.UserDto
 import com.wolfo.storycraft.data.remote.dto.UserRegisterRequestDto
 import com.wolfo.storycraft.data.remote.dto.UserSimpleDto
 import com.wolfo.storycraft.data.remote.dto.UserUpdateDto
-import com.wolfo.storycraft.domain.model.Choice
-import com.wolfo.storycraft.domain.model.Page
+import com.wolfo.storycraft.domain.model.story.Choice
+import com.wolfo.storycraft.domain.model.draft.DraftChoice
+import com.wolfo.storycraft.domain.model.draft.DraftContent
+import com.wolfo.storycraft.domain.model.draft.DraftPage
+import com.wolfo.storycraft.domain.model.story.Page
+import com.wolfo.storycraft.domain.model.PublishChoice
+import com.wolfo.storycraft.domain.model.PublishContent
+import com.wolfo.storycraft.domain.model.PublishPage
 import com.wolfo.storycraft.domain.model.Review
-import com.wolfo.storycraft.domain.model.StoryBaseInfo
-import com.wolfo.storycraft.domain.model.StoryFull
-import com.wolfo.storycraft.domain.model.Tag
-import com.wolfo.storycraft.domain.model.User
-import com.wolfo.storycraft.domain.model.UserRegisterRequest
-import com.wolfo.storycraft.domain.model.UserSimple
-import com.wolfo.storycraft.domain.model.UserUpdate
+import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
+import com.wolfo.storycraft.domain.model.story.StoryFull
+import com.wolfo.storycraft.domain.model.story.Tag
+import com.wolfo.storycraft.domain.model.user.User
+import com.wolfo.storycraft.domain.model.auth.UserRegisterRequest
+import com.wolfo.storycraft.domain.model.user.UserSimple
+import com.wolfo.storycraft.domain.model.user.UserUpdate
 
 // ==========================================
 // --- DTO (Network) -> Entity (Database) ---
@@ -506,3 +524,187 @@ fun Tag.toEntity(): TagEntity {
         name = this.name
     )
 }
+
+
+// ==========================================================
+// --- Mappers: Domain Model (DraftContent) -> Draft Entity ---
+// ==========================================================
+// Эти мапперы преобразуют Domain модель DraftContent для сохранения в локальной БД черновиков (Entity).
+
+// Класс маппера для сохранения черновиков, требующий Gson для работы с тегами
+class DraftContentToStoryDraftEntityMapper(private val gson: Gson) {
+
+    /**
+     * Преобразует [DraftContent] (Domain) в [StoryDraftEntity] (Entity).
+     */
+    fun map(draftContent: DraftContent): StoryDraftEntity {
+        // Сериализация тегов в JSON строку
+        val tagsJson = gson.toJson(draftContent.tags)
+        return StoryDraftEntity(
+            id = draftContent.id, // Используем ID из Domain модели
+            userId = draftContent.userId, // ID пользователя из Domain модели
+            title = draftContent.title,
+            description = draftContent.description,
+            tagsJson = tagsJson,
+            coverImageUri = draftContent.coverImagePath?.let { Uri.parse(it) }, // String path -> Uri для Entity
+            lastSavedTimestamp = System.currentTimeMillis() // Обновляем метку времени при маппинге для сохранения
+        )
+    }
+
+    /**
+     * Преобразует список страниц из [DraftContent] (Domain) в список [PageDraftEntity] (Entity).
+     * Порядок страниц берется из Domain модели.
+     */
+    fun mapPages(draftContent: DraftContent): List<PageDraftEntity> {
+        return draftContent.pages.map { page -> // Domain model DraftPage уже имеет pageOrder
+            PageDraftEntity(
+                id = page.id, // Используем ID из Domain модели
+                storyDraftId = draftContent.id, // Связываем с StoryDraftEntity ID
+                text = page.text,
+                imageUri = page.imagePath?.let { Uri.parse(it) }, // String path -> Uri для Entity
+                isEndingPage = page.isEndingPage,
+                pageOrder = page.pageOrder // Сохраняем порядок из Domain модели
+            )
+        }
+    }
+
+    /**
+     * Преобразует список выборов из [DraftContent] (Domain) в список [ChoiceDraftEntity] (Entity).
+     * Проходит по всем страницам Domain модели и собирает выборы.
+     */
+    fun mapChoices(draftContent: DraftContent): List<ChoiceDraftEntity> {
+        return draftContent.pages.flatMap { page -> // Используем flatMap, чтобы получить один плоский список выборов
+            page.choices.map { choice ->
+                ChoiceDraftEntity(
+                    id = choice.id, // Используем ID из Domain модели
+                    pageDraftId = page.id, // Связываем с PageDraftEntity ID (Domain ID страницы)
+                    text = choice.text,
+                    targetPageIndex = choice.targetPageIndex // Индекс остается Int?
+                )
+            }
+        }
+    }
+}
+
+
+// ============================================================
+// --- Mappers: Domain Model (PublishContent) -> Remote DTO (Create) ---
+// ============================================================
+// Этот маппер преобразует Domain модель PublishContent в сетевые DTO для создания истории.
+
+class PublishContentToStoryCreateDtoMapper {
+
+    /**
+     * Преобразует [PublishContent] (Domain) в [StoryCreateJsonDataDto] (DTO для JSON части API).
+     * Файлы изображений (File) передаются отдельно в RemoteDataSource.
+     */
+    fun mapJsonData(publishContent: PublishContent): StoryCreateJsonDataDto {
+        return StoryCreateJsonDataDto(
+            title = publishContent.title,
+            description = publishContent.description,
+            tags = publishContent.tags, // Список строк тегов
+            pages = publishContent.pages.map { it.toPageCreateDto() } // Маппим страницы
+        )
+    }
+
+    // Внутренний маппер для страницы для API
+    private fun PublishPage.toPageCreateDto(): PageCreateDto {
+        return PageCreateDto(
+            pageText = text,
+            isEndingPage = isEndingPage,
+            choices = choices.map { it.toChoiceCreateDto() } // Маппим выборы
+        )
+    }
+
+    // Внутренний маппер для выбора для API
+    private fun PublishChoice.toChoiceCreateDto(): ChoiceCreateDto {
+        return ChoiceCreateDto(
+            choiceText = text,
+            targetPageIndex = targetPageIndex // Передаем индекс!
+        )
+    }
+}
+
+
+// ==========================================================
+// --- Mappers: Draft Entity -> Domain Model (DraftContent) ---
+// ==========================================================
+// Эти мапперы преобразуют данные черновика из локальной БД (Entity) в Domain модель DraftContent.
+
+// Класс маппера для черновиков, требующий Gson для работы с тегами
+class StoryDraftEntityToDraftContentMapper(private val gson: Gson) {
+
+    /**
+     * Преобразует [StoryDraftWithPagesAndChoices] (Entity с отношениями) в [DraftContent] (Domain).
+     */
+    fun map(draftWithDetails: StoryDraftWithPagesAndChoices): DraftContent {
+        // Десериализация тегов из JSON строки
+        val tagsType = object : TypeToken<List<String>>() {}.type
+        val tags: List<String> = try {
+            gson.fromJson(draftWithDetails.storyDraft.tagsJson, tagsType) ?: emptyList()
+        } catch (e: Exception) {
+            // В случае ошибки парсинга возвращаем пустой список
+            emptyList()
+        }
+
+        return DraftContent(
+            id = draftWithDetails.storyDraft.id,
+            userId = draftWithDetails.storyDraft.userId,
+            title = draftWithDetails.storyDraft.title,
+            description = draftWithDetails.storyDraft.description,
+            tags = tags,
+            coverImagePath = draftWithDetails.storyDraft.coverImageUri?.toString(), // Uri -> String path для Domain
+            pages = draftWithDetails.pagesWithChoices
+                .sortedBy { it.pageDraft.pageOrder } // Сортируем страницы по порядку
+                .map { it.toDraftPage() }, // Маппим PageDraftWithChoices -> DraftPage
+            lastSavedTimestamp = draftWithDetails.storyDraft.lastSavedTimestamp
+        )
+    }
+
+    // Внутренний маппер для страницы черновика (Entity Relation -> Domain)
+    private fun PageDraftWithChoices.toDraftPage(): DraftPage {
+        return DraftPage(
+            id = pageDraft.id, // Клиентский ID
+            text = pageDraft.text,
+            imagePath = pageDraft.imageUri?.toString(), // Uri -> String path для Domain
+            isEndingPage = pageDraft.isEndingPage,
+            choices = choices.map { it.toDraftChoice() },
+            pageOrder = pageDraft.pageOrder// Маппим ChoiceDraftEntity -> DraftChoice
+            // pageOrder не включаем в Domain модель, он для хранения порядка
+        )
+    }
+
+    // Внутренний маппер для выбора черновика (Entity -> Domain)
+    private fun ChoiceDraftEntity.toDraftChoice(): DraftChoice {
+        return DraftChoice(
+            id = id, // Клиентский ID
+            text = text,
+            targetPageIndex = targetPageIndex // Индекс остается Int?
+        )
+    }
+
+    /**
+     * Преобразует [StoryBaseInfoDraft] (Projection из Room) в [StoryBaseInfo] (Domain).
+     * Используется для списка черновиков.
+     * Needs Gson only if tags were in the projection, but they are not.
+     */
+    fun mapBaseInfo(draft: StoryBaseInfoDraft): StoryBaseInfo {
+        // Draft Projection не содержит всех полей StoryBaseInfo.
+        // Используем значения по умолчанию или null для недостающих полей.
+        // ID черновика (строка) используется как ID в StoryBaseInfo.
+        return StoryBaseInfo(
+            id = draft.id, // ID черновика
+            title = draft.title,
+            description = null, // Нет в Projection
+            coverImageUrl = null, // Нет в Projection
+            averageRating = 0f, // Значение по умолчанию
+            publishedTime = draft.lastSavedTimestamp.toString(), // Используем timestamp сохранения как временный "publishedTime"
+            viewCount = 0, // Значение по умолчанию
+            author = UserSimple(id = "", username = "Черновик", avatarUrl = null), // Заглушка автора для списка
+            tags = emptyList() // Нет в Projection
+        )
+    }
+}
+
+
+

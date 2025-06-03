@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.User
-import com.wolfo.storycraft.domain.model.UserRegisterRequest
+import com.wolfo.storycraft.domain.model.user.User
+import com.wolfo.storycraft.domain.model.auth.UserRegisterRequest
 import com.wolfo.storycraft.domain.usecase.auth.LoginUserUseCase
 import com.wolfo.storycraft.domain.usecase.auth.RegisterUserUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +32,7 @@ class AuthViewModel(
 
         if (userName.isBlank() || email.isBlank() || password.isBlank()) {
             _uiState.value =
-                AuthUiState.Error(error = DataError.Validation("Fields cannot be empty"))
+                AuthUiState.Error(error = DataError.Validation.UI("Fields cannot be empty"))
             return
         }
 
@@ -44,7 +44,7 @@ class AuthViewModel(
 
     fun login(userName: String, password: String) {
         if (userName.isBlank() || password.isBlank()) {
-            _uiState.value = AuthUiState.Error(error = DataError.Validation("Fields cannot be empty"))
+            _uiState.value = AuthUiState.Error(error = DataError.Validation.UI("Fields cannot be empty"))
             return
         }
 

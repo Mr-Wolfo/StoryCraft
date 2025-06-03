@@ -63,68 +63,66 @@ class RepositoryHandler {
         checkOrErrorAfter: (ENTITY?, NETWORK_MODEL?) -> ResultM.Failure? = { _, _ -> null },
         dataNullError: DataError = DataError.Unknown(errorMessage = "Empty data error")
     ): Flow<ResultM<DOMAIN_MODEL>> = flow {
-        checkOrErrorBefore().also { error ->
-            error?.let {
-                logError("CheckBefore FAIL: ${it.error}")
-                emit(it)
-                return@flow
+        logDebug("Process Started")
+
+        // 1. Проверка ошибок
+        checkOrErrorBefore()?.let { error ->
+            logError("CheckBefore FAIL: ${error.error}")
+            emit(error)
+            return@flow
+        }
+        logDebug("CheckBefore SUCCESS")
+
+        // 2. Первый эмит только если есть данные
+        val cachedData = localDataCall().first()
+        if (firstEmit && cachedData != null) {
+            localTransform(cachedData).let {
+                emit(ResultM.success(it))
             }
         }
 
-        logDebug("CheckBefore SUCCESS")
-
-        val cachedData = localDataCall().first()
-        val transformCachedData = cachedData?.let(localTransform)
-
-        if (firstEmit) {
-            emit(
-                transformCachedData?.let { ResultM.success(it) }
-                    ?: ResultM.failure(dataNullError)
-            )
-        }
-
-        logDebug("First Emit Success")
-
+        // 3. Загрузка из сети только если нужно
         var networkError: DataError? = null
         var freshData: NETWORK_MODEL? = null
 
         if (needToRefresh(cachedData)) {
             emit(ResultM.loading())
             when (val fetchResult = networkResult()) {
-                is ResultM.Failure -> {
-                    logError("Refresh Failure")
-                    networkError = fetchResult.error
-                    emit(ResultM.failure(fetchResult.error, transformCachedData))
-                }
                 is ResultM.Success -> {
-                    logDebug("Refresh Success")
                     freshData = fetchResult.data
+                    logDebug("Refresh Success")
                 }
-                is ResultM.Loading -> {
-                    emit(ResultM.loading())
+                is ResultM.Failure -> {
+                    networkError = fetchResult.error
+                    logError("Refresh Failure")
+                    // Не эмитим ошибку здесь, ждем актуальных данных из БД
                 }
+                ResultM.Loading -> emit(ResultM.loading())
             }
         }
 
+        // 4. Основной поток данных из БД
         localDataCall().collect { data ->
-            checkOrErrorAfter(data, freshData)?.let { error ->
-                logError("CheckAfter FAIL")
-                emit(error)
-                return@collect
-            }
-
-            val currentDomainData = data?.let(localTransform) ?: run {
+            val currentDomain = data?.let(localTransform) ?: run {
                 emit(ResultM.failure(dataNullError))
                 return@collect
             }
 
-            logDebug("CheckAfter SUCCESS")
+            checkOrErrorAfter(data, freshData)?.let { error ->
+                emit(error)
+                return@collect
+            }
 
             emit(
                 when {
-                    networkError != null -> ResultM.failure(networkError, currentDomainData)
-                    freshData != null -> ResultM.success(sourcesDataMergeTransform(currentDomainData, freshData))
-                    else -> ResultM.success(currentDomainData)
+                    freshData != null -> ResultM.success(
+                        sourcesDataMergeTransform(currentDomain, freshData)
+                    )
+                    networkError != null -> ResultM.failure(
+                        error = networkError,
+                        cachedData = currentDomain // Всегда передаем актуальные данные
+                    )
+                    else -> ResultM.success(currentDomain)
                 }
             )
         }

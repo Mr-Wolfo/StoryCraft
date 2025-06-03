@@ -10,15 +10,22 @@ import com.wolfo.storycraft.data.local.db.dao.ChoiceDao
 import com.wolfo.storycraft.data.local.db.dao.PageDao
 import com.wolfo.storycraft.data.local.db.dao.ReviewDao
 import com.wolfo.storycraft.data.local.db.dao.StoryDao
+import com.wolfo.storycraft.data.local.db.dao.StoryDraftDao
 import com.wolfo.storycraft.data.local.db.dao.StoryTagCrossRefDao
 import com.wolfo.storycraft.data.local.db.dao.TagDao
 import com.wolfo.storycraft.data.local.db.dao.UserDao
+import com.wolfo.storycraft.data.local.db.entity.ChoiceDraftEntity
 import com.wolfo.storycraft.data.local.db.entity.ChoiceEntity
+import com.wolfo.storycraft.data.local.db.entity.PageDraftEntity
+import com.wolfo.storycraft.data.local.db.entity.PageDraftWithChoices
 import com.wolfo.storycraft.data.local.db.entity.PageEntity
 import com.wolfo.storycraft.data.local.db.entity.ReviewEntity
+import com.wolfo.storycraft.data.local.db.entity.StoryDraftEntity
+import com.wolfo.storycraft.data.local.db.entity.StoryDraftWithPagesAndChoices
 import com.wolfo.storycraft.data.local.db.entity.StoryEntity
 import com.wolfo.storycraft.data.local.db.entity.StoryTagCrossRef
 import com.wolfo.storycraft.data.local.db.entity.TagEntity
+import com.wolfo.storycraft.data.local.db.entity.UriConverter
 import com.wolfo.storycraft.data.local.db.entity.UserEntity
 
 @Database(
@@ -29,12 +36,16 @@ import com.wolfo.storycraft.data.local.db.entity.UserEntity
         ChoiceEntity::class,
         ReviewEntity::class,
         TagEntity::class,
-        StoryTagCrossRef::class
+        StoryTagCrossRef::class,
+        ChoiceDraftEntity::class,
+        PageDraftEntity::class,
+
+        StoryDraftEntity::class
     ],
     version = 1, // Увеличивайте версию при изменении схемы
     exportSchema = true // Рекомендуется для продакшена (помогает с миграциями)
 )
-@TypeConverters(DateConverter::class, ListConverter::class, AuthorConverter::class) // Регистрируем конвертеры
+@TypeConverters(DateConverter::class, ListConverter::class, AuthorConverter::class, UriConverter::class) // Регистрируем конвертеры
 abstract class StoryAppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
@@ -44,6 +55,7 @@ abstract class StoryAppDatabase : RoomDatabase() {
     abstract fun reviewDao(): ReviewDao
     abstract fun tagDao(): TagDao
     abstract fun storyTagCrossRefDao(): StoryTagCrossRefDao
+    abstract fun storyDraftDao(): StoryDraftDao
 
     // Полезная функция для выполнения нескольких операций DAO в одной транзакции
     suspend fun <R> runInTransaction(block: suspend () -> R): R {

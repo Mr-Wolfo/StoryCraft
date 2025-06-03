@@ -1,9 +1,11 @@
 package com.wolfo.storycraft.domain.repository
 
 import com.wolfo.storycraft.domain.ResultM
+import com.wolfo.storycraft.domain.model.draft.DraftContent
+import com.wolfo.storycraft.domain.model.PublishContent
 import com.wolfo.storycraft.domain.model.Review
-import com.wolfo.storycraft.domain.model.StoryBaseInfo
-import com.wolfo.storycraft.domain.model.StoryFull
+import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
+import com.wolfo.storycraft.domain.model.story.StoryFull
 import com.wolfo.storycraft.domain.model.StoryQuery
 import kotlinx.coroutines.flow.Flow
 import java.io.File
@@ -42,21 +44,21 @@ interface StoryRepository {
      */
     suspend fun getBaseStoryById(storyId: String): ResultM<StoryBaseInfo>
 
-    /**
-     * Создает новую историю.
-     *
-     * @param title Название.
-     * @param description Описание.
-     * @param tags Список имен тегов.
-     * @param coverImageFile Файл обложки (опционально).
-     * @return Result<StoryFullDto> Результат с созданной историей.
-     */
-    suspend fun createStory(
-        title: String,
-        description: String?,
-        tags: List<String>,
-        // TODO: Добавить страницы/выборы при создании, если API поддерживает
-        coverImageFile: File?
+
+    // TODO Добавить описание функций
+
+    // --- Draft Stories ---
+    // Возвращает Domain StoryBaseInfo для списка (маппится из Draft Entity Projection)
+    fun getDraftStoriesForUser(userId: String): Flow<ResultM<List<StoryBaseInfo>>>
+    // Возвращает Domain DraftContent для редактирования (маппится из Draft Entity WithRelations)
+    suspend fun getStoryDraft(draftId: String): ResultM<DraftContent>
+    // Принимает Domain DraftContent для сохранения (маппится в Draft Entity)
+    suspend fun saveStoryDraft(draftContent: DraftContent): ResultM<Unit> // userId уже внутри DraftContent
+    suspend fun deleteStoryDraft(draftId: String): ResultM<Unit>
+    // --- Publish Story (от черновика к опубликованной) ---
+    // Принимает UI EditableStoryDraft и File-ы для публикации
+    suspend fun publishStory(
+        publishContent: PublishContent // Domain модель
     ): ResultM<StoryFull>
 
     /**

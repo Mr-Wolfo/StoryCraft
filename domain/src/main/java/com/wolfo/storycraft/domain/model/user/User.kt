@@ -1,4 +1,6 @@
-package com.wolfo.storycraft.domain.model
+package com.wolfo.storycraft.domain.model.user
+
+import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
 
 data class User(
     val id: String,

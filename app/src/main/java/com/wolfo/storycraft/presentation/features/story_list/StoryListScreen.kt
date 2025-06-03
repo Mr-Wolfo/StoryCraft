@@ -1,6 +1,11 @@
 package com.wolfo.storycraft.presentation.features.story_list
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -30,7 +35,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
@@ -40,50 +49,71 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.InputChip
+import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.wolfo.storycraft.R
 import com.wolfo.storycraft.domain.DataError
-import com.wolfo.storycraft.domain.model.StoryBaseInfo
-import com.wolfo.storycraft.domain.model.Tag
-import com.wolfo.storycraft.domain.model.UserSimple
+import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
+import com.wolfo.storycraft.domain.model.story.Tag
+import com.wolfo.storycraft.domain.model.user.UserSimple
+import com.wolfo.storycraft.presentation.common.BackgroundImage
 import com.wolfo.storycraft.presentation.common.ErrorBottomMessage
 import com.wolfo.storycraft.presentation.common.GlassCard
 import com.wolfo.storycraft.presentation.common.LoadingBar
+import com.wolfo.storycraft.presentation.common.TagChip
 import com.wolfo.storycraft.presentation.common.Utils
 import com.wolfo.storycraft.presentation.common.formatNumber
+import com.wolfo.storycraft.presentation.theme.extendedColors
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoryListScreen(
     viewModel: StoryListViewModel = koinViewModel(),
+    searchViewModel: SearchAndFilterViewModel = koinViewModel(),
+    padding: PaddingValues,
     onStoryClick: (String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -92,72 +122,511 @@ fun StoryListScreen(
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
 
+    val searchQuery by searchViewModel.searchQuery.collectAsState()
+    val filtersVisible by searchViewModel.filtersVisible.collectAsState()
+    val currentQuery by searchViewModel.currentQuery.collectAsState()
+
+    val mixedList by viewModel.mixedList.collectAsState()
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.destroy()
+        }
+    }
+
     Scaffold(
         topBar = {
-            GlassCard(modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.statusBars).padding(top = 5.dp)) {
-                Row(modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(value = "Здесь будет поиск", onValueChange = {}, modifier = Modifier.fillMaxWidth(0.8f))
-                    Icon(Icons.Default.Search, contentDescription = "Search", modifier = Modifier.size(40.dp))
-                }
-            }
+            StoryListTopAppBar(
+                searchQuery = searchQuery,
+                filtersVisible = filtersVisible,
+                onSearchQueryChanged = searchViewModel::updateSearchQuery,
+                onFiltersToggle = searchViewModel::toggleFilters
+            )
         }
     ) { paddingValues ->
-        StoryListBackground(scrollState = scrollState)
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)) {
+        BackgroundImage(painter = painterResource(R.drawable.details_background))
 
-            when (val state = uiState) {
-                StoryListUiState.Loading -> FullScreenLoading()
-                is StoryListUiState.Error -> ErrorState(
-                    error = (uiState as StoryListUiState.Error<List<StoryBaseInfo>>).error,
-                    onRetry = { viewModel.refreshStoriesCatalog() }
-                )
-                is StoryListUiState.Success -> {
-                    if (state.data.isEmpty()) {
-                        EmptyState()
-                    } else {
-                        StoryListContent(
-                            stories = state.data,
-                            scrollState = scrollState,
-                            onRefresh = { coroutineScope.launch { viewModel.refreshStoriesCatalog() } },
-                            onStoryClick = {
-                                Log.d("SLScreen", it)
-                                onStoryClick(it)}
+
+        Box(modifier = Modifier.fillMaxSize()
+            .padding(paddingValues)
+            .padding(bottom = padding.calculateBottomPadding())
+            .windowInsetsPadding(WindowInsets.navigationBars)) {
+
+            Box(modifier = Modifier
+                .fillMaxSize()) {
+
+                when (val state = uiState) {
+                    StoryListUiState.Loading -> FullScreenLoading()
+                    is StoryListUiState.Error -> ErrorState(
+                        error = (uiState as StoryListUiState.Error<List<StoryBaseInfo>>).error,
+                        onRetry = { viewModel.loadStories(currentQuery) }
+                    )
+                    is StoryListUiState.Success -> {
+                        if (state.data.isEmpty()) {
+                            EmptyState()
+                        } else {
+                            StoryListContent(
+                                stories = mixedList,
+                                scrollState = scrollState,
+                                onRefresh = {
+                                    viewModel.loadStories()
+                                    viewModel.loadAds() },
+                                onStoryClick = {
+                                    Log.d("SLScreen", it)
+                                    onStoryClick(it)}
+                            )
+                        }
+                    }
+                    StoryListUiState.Idle -> {}
+                }
+            }
+
+            FiltersPanel(filtersVisible, searchViewModel, Modifier.padding(paddingValues))
+
+
+            when(val barState = appStatusBarUiState) {
+                is AppStatusBarUiState.Idle -> { }
+                is AppStatusBarUiState.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .windowInsetsPadding(WindowInsets.navigationBars)
+                            .fillMaxSize()
+                            .background(Color.Transparent),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        println("LOAD")
+                        LoadingBar(
+                            isVisible = true
                         )
                     }
                 }
-                StoryListUiState.Idle -> {}
+                is AppStatusBarUiState.Error -> {
+                    Box(
+                        modifier = Modifier
+                            .windowInsetsPadding(WindowInsets.navigationBars)
+                            .padding(10.dp)
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.BottomCenter
+                    ) {
+                        Log.d("StoryList Screen", "Failed")
+                        ErrorBottomMessage(
+                            message = barState.error.message ?: "Unknown error",
+                            isVisible = true
+                        ) { }}
+                }
+                else -> { } // НЕ ПРОИЗОЙДЁТ
             }
         }
+    }
+}
 
-        when(val barState = appStatusBarUiState) {
-            is AppStatusBarUiState.Idle -> { }
-            is AppStatusBarUiState.Loading -> {
-                Box(
-                    modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
-                        .fillMaxSize().background(Color.Transparent),
-                    contentAlignment = Alignment.BottomCenter
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StoryListTopAppBar(
+    searchQuery: String,
+    filtersVisible: Boolean,
+    onSearchQueryChanged: (String) -> Unit,
+    onFiltersToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        GlassCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(top = 8.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SearchTextField(
+                    value = searchQuery,
+                    onValueChange = onSearchQueryChanged,
+                    modifier = Modifier.weight(1f)
+                )
+
+                FilterToggleButton(
+                    filtersVisible = filtersVisible,
+                    onToggle = onFiltersToggle
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        placeholder = { Text("Поиск историй...") },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = Color.Transparent,
+            focusedContainerColor = Color.Transparent,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.outlineVariant,
+            focusedIndicatorColor = MaterialTheme.colorScheme.primary
+        ),
+        singleLine = true,
+        textStyle = MaterialTheme.typography.bodyLarge,
+        shape = MaterialTheme.shapes.extraLarge
+    )
+}
+
+@Composable
+private fun FilterToggleButton(
+    filtersVisible: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    IconButton(
+        onClick = onToggle,
+        modifier = modifier.size(48.dp),
+        colors = IconButtonDefaults.iconButtonColors(
+            containerColor = if (filtersVisible) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                Color.Transparent
+            }
+        )
+    ) {
+        Icon(
+            imageVector = Icons.Default.Menu,
+            contentDescription = if (filtersVisible) {
+                "Скрыть фильтры"
+            } else {
+                "Показать фильтры"
+            },
+            tint = if (filtersVisible) {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
+    }
+}
+
+@Composable
+private fun FiltersPanel(
+    visible: Boolean,
+    viewModel: SearchAndFilterViewModel,
+    modifier: Modifier = Modifier
+) {
+    val sortBy by viewModel.sortBy.collectAsState()
+    val sortOrder by viewModel.sortOrder.collectAsState()
+    val authorFilter by viewModel.authorFilter.collectAsState()
+    val tagsFilter by viewModel.tagsFilter.collectAsState()
+
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically(),
+        modifier = modifier
+    ) {
+        GlassCard(
+            modifier = Modifier.fillMaxWidth(),
+            containerAlpha = 0.9f
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SortSection(
+                    sortBy = sortBy,
+                    sortOrder = sortOrder,
+                    onSortByChanged = viewModel::updateSortBy,
+                    onSortOrderChanged = viewModel::updateSortOrder
+                )
+
+                AuthorFilter(
+                    currentAuthor = authorFilter,
+                    onAuthorChanged = viewModel::updateAuthorFilter
+                )
+
+                TagsFilter(
+                    currentTags = tagsFilter,
+                    onTagsChanged = viewModel::updateTagsFilter
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SortSection(
+    sortBy: String,
+    sortOrder: String,
+    onSortByChanged: (String) -> Unit,
+    onSortOrderChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = "Сортировка",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    println("LOAD")
-                    LoadingBar(
-                        isVisible = true
+                    SortChip(
+                        label = "По дате",
+                        selected = sortBy == "published_time",
+                        onClick = { onSortByChanged("published_time") }
+                    )
+
+                    SortChip(
+                        label = "По рейтингу",
+                        selected = sortBy == "rating",
+                        onClick = { onSortByChanged("rating") }
                     )
                 }
-            }
-            is AppStatusBarUiState.Error -> {
-                Box(
-                    modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(10.dp)
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.BottomCenter
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Log.d("StoryList Screen", "Failed")
-                    ErrorBottomMessage(
-                        message = barState.error.message ?: "Unknown error",
-                        isVisible = true
-                    ) { }}
+                    SortChip(
+                        label = "По просмотрам",
+                        selected = sortBy == "views",
+                        onClick = { onSortByChanged("views") }
+                    )
+
+                    SortChip(
+                        label = "По названию",
+                        selected = sortBy == "title",
+                        onClick = { onSortByChanged("title") }
+                    )
+                }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            SortOrderChip(
+                label = "По возрастанию",
+                selected = sortOrder == "asc",
+                onClick = { onSortOrderChanged("asc") }
+            )
+
+            SortOrderChip(
+                label = "По убыванию",
+                selected = sortOrder == "desc",
+                onClick = { onSortOrderChanged("desc") }
+            )
+        }
+    }
+}
+
+@Composable
+private fun SortChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(label) },
+        modifier = modifier,
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        border = FilterChipDefaults.filterChipBorder(
+            borderColor = if (selected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outlineVariant
+            },
+            selectedBorderColor = MaterialTheme.colorScheme.primary,
+            borderWidth = 1.dp,
+            enabled = true,
+            selected = false
+        )
+    )
+}
+
+@Composable
+private fun SortOrderChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    SuggestionChip(
+        onClick = onClick,
+        label = { Text(label) },
+        modifier = modifier,
+        colors = SuggestionChipDefaults.suggestionChipColors(
+            containerColor = if (selected) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            },
+            labelColor = if (selected) {
+                MaterialTheme.colorScheme.onSecondaryContainer
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        ),
+        border = BorderStroke(width = 1.dp, color = if (selected) {
+            MaterialTheme.colorScheme.secondary
+        } else {
+            Color.Transparent
+        }
+        )
+    )
+}
+
+@Composable
+private fun AuthorFilter(
+    currentAuthor: String?,
+    onAuthorChanged: (String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var authorText by remember { mutableStateOf(currentAuthor ?: "") }
+
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = authorText,
+            onValueChange = { authorText = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Фильтр по автору") },
+            trailingIcon = {
+                if (authorText.isNotEmpty()) {
+                    IconButton(
+                        onClick = {
+                            authorText = ""
+                            onAuthorChanged(null)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Очистить"
+                        )
+                    }
+                }
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done,
+                capitalization = KeyboardCapitalization.Words
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    onAuthorChanged(authorText.takeIf { it.isNotBlank() })
+                }
+            ),
+            singleLine = true,
+            shape = MaterialTheme.shapes.medium,
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent
+            )
+        )
+    }
+}
+
+@Composable
+private fun TagsFilter(
+    currentTags: List<String>?,
+    onTagsChanged: (List<String>?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var tagsText by remember { mutableStateOf(currentTags?.joinToString(", ") ?: "") }
+
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = tagsText,
+            onValueChange = { tagsText = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Фильтр по тегам") },
+            supportingText = { Text("Разделяйте теги запятыми") },
+            trailingIcon = {
+                if (tagsText.isNotEmpty()) {
+                    IconButton(
+                        onClick = {
+                            tagsText = ""
+                            onTagsChanged(null)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Очистить"
+                        )
+                    }
+                }
+            },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    onTagsChanged(
+                        tagsText.split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotBlank() }
+                            .takeIf { it.isNotEmpty() }
+                    )
+                }
+            ),
+            singleLine = false,
+            shape = MaterialTheme.shapes.medium,
+            colors = TextFieldDefaults.colors(
+                unfocusedContainerColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent
+            )
+        )
+
+        // Показываем выбранные теги
+        if (!currentTags.isNullOrEmpty()) {
+            FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                currentTags.forEach { tag ->
+                    InputChip(
+                        selected = true,
+                        onClick = {
+                            onTagsChanged(currentTags - tag)
+                        },
+                        label = { Text(tag) },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Удалить тег",
+                                modifier = Modifier.size(16.dp)
+                            )
+                        },
+                        colors = InputChipDefaults.inputChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            selectedLabelColor = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                    )
+                }
             }
         }
     }
@@ -166,7 +635,7 @@ fun StoryListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StoryListContent(
-    stories: List<StoryBaseInfo>,
+    stories: List<ListItem>,
     scrollState: ScrollState,
     onRefresh: () -> Unit,
     onStoryClick: (String) -> Unit,
@@ -185,12 +654,36 @@ private fun StoryListContent(
         ) {
             items(
                 items = stories,
-                key = { it.id }
-            ) { story ->
-                StoryListItem(
-                    story = story,
-                    onClick = { onStoryClick(story.id) }
-                )
+                key = { item ->
+                    when(item) {
+                        is ListItem.AdItem -> "ad_${item.nativeAd?.hashCode() ?: UUID.randomUUID()}"
+                        is ListItem.StoryItem -> item.story.id
+                    }
+                }
+            ) { item ->
+                when(item) {
+                    is ListItem.AdItem -> {
+
+                        val loadedAd by rememberUpdatedState(item.nativeAd)
+
+                        Log.d("Loaded Ad", loadedAd?.adAssets?.title ?: "nothing")
+
+                        if (loadedAd != null) {
+                            NativeAdCard(
+                                nativeAd = loadedAd!!,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                            )
+                        }
+                    }
+                    is ListItem.StoryItem -> {
+                        StoryListItem(
+                            story = item.story,
+                            onClick = { onStoryClick(item.story.id) }
+                        )
+                    }
+                }
             }
         }
     }
@@ -227,6 +720,7 @@ private fun StoryListItem(
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+
     val borderColor = if (false) MaterialTheme.colorScheme.primary else Color.Transparent // is Premium?
 
     val dateTime = remember { Utils.toLocaleDateTime(story.publishedTime) }
@@ -253,10 +747,9 @@ private fun StoryListItem(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
                 placeholder = painterResource(R.drawable.ic_launcher_background),
-                error = painterResource(R.drawable.stars_sky)
+                error = painterResource(R.drawable.story_placeholder)
             )
 
-            // Градиент для лучшей читаемости текста
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -333,27 +826,7 @@ private fun StoryListItem(
     }
 }
 
-@Composable
-fun TagChip(tag: String) {
-    Box(
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.small)
-            .background(Color.White.copy(alpha = 0.2f))
-            .border(
-                width = 1.dp,
-                color = Color.White.copy(alpha = 0.4f),
-                shape = MaterialTheme.shapes.small
-            )
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(
-            text = tag,
-            style = MaterialTheme.typography.labelSmall.copy(
-                color = Color.White
-            )
-        )
-    }
-}
+
 
 @Composable
 fun StoryMetaInfo(
@@ -380,7 +853,7 @@ fun StoryMetaInfo(
             Icon(
                 imageVector = Icons.Default.Star,
                 contentDescription = null,
-                tint = Color.Yellow,
+                tint = MaterialTheme.extendedColors.star,
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -505,34 +978,5 @@ private fun ErrorState(
         ) {
             Text("Повторить попытку")
         }
-    }
-}
-
-@Composable
-private fun StoryListBackground(scrollState: ScrollState) {
-    val parallaxFactor = 0.3f
-    val offset = scrollState.value * parallaxFactor
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        AsyncImage(
-            model = "https://zefirka.club/wallpapers/uploads/posts/2023-04/thumbs/1680362002_zefirka-club-p-chernie-oboi-na-telefon-dlya-malchikov-16.jpg",
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer { translationY = offset }
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0f to Color.Transparent,
-                        0.5f to MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                        1f to MaterialTheme.colorScheme.surface
-                    )
-                )
-        )
     }
 }

@@ -82,24 +82,22 @@ interface ApiService {
         @Query("tag_names") tagNames: List<String>? = null
     ): Response<StoryListResponseDto> // 200
 
-    @Multipart
+    @Multipart // Этот эндпоинт ожидает multipart/form-data
     @POST("api/v1/stories/")
     suspend fun createStory(
-        @Part("story_data") storyData: RequestBody, // JSON строка с данными истории
-        @Part coverImageFile: MultipartBody.Part? // Опциональный файл обложки
-        // Возможно, понадобится @PartMap для других файлов, если API их ожидает
-    ): Response<StoryFullDto> // 201 (Требует токен)
+        @Part parts: List<MultipartBody.Part> // Принимаем список частей
+        // Теперь клиент (RemoteDataSourceImpl) формирует все части (@Part("story_data"), @Part("cover_image_file"), @Part("page_images"), @Part("page_image_indexes"))
+    ): Response<StoryFullDto> // 201
 
     @GET("api/v1/stories/{story_id}")
     suspend fun getStoryById(@Path("story_id") storyId: String): Response<StoryFullDto> // 200
 
-    @Multipart
+    @Multipart // Предполагаем, что обновление тоже multipart
     @PATCH("api/v1/stories/{story_id}")
     suspend fun updateStory(
         @Path("story_id") storyId: String,
-        @Part("story_data") storyData: RequestBody?, // JSON строка с обновляемыми полями
-        @Part coverImageFile: MultipartBody.Part? // Опциональный новый файл обложки
-    ): Response<StoryFullDto> // 200 (Требует токен)
+        @Part parts: List<MultipartBody.Part> // Принимаем список частей (story_data, cover_image_file)
+    ): Response<StoryFullDto> // 200
 
     @DELETE("api/v1/stories/{story_id}")
     suspend fun deleteStory(@Path("story_id") storyId: String): Response<Unit> // 204 (Требует токен)

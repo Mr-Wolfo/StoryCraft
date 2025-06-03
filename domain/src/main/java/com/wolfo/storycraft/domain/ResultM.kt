@@ -13,6 +13,26 @@ sealed class ResultM<out T> {
     data class Failure(val error: DataError, val cachedData: Any? = null) : ResultM<Nothing>()
     data object Loading : ResultM<Nothing>()
 
+    fun <R> mapSuccess(transform: (T) -> R): ResultM<R> {
+        return when (this) {
+            is Success -> Success(transform(data))
+            is Failure -> Failure(error, cachedData)
+            Loading -> Loading
+        }
+    }
+    fun getOrNull(): T? {
+        return when (this) {
+            is Success -> data
+            else -> null
+        }
+    }
+    fun getErrorOrNull(): DataError? {
+        return when (this) {
+            is Failure -> error
+            else -> null
+        }
+    }
+
     companion object {
         fun <T> success(data: T): ResultM<T> = Success(data)
         fun <T> failure(error: DataError, cachedData: Any? = null): ResultM<T> = Failure(error, cachedData)

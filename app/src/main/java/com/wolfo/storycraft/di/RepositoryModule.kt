@@ -16,7 +16,7 @@ import org.koin.dsl.module
 val repositoryModule = module {
 
     single<RemoteDataSource> {
-        RemoteDataSourceImpl(get())
+        RemoteDataSourceImpl(get(), get(), get())
     }
 
     single<LocalDataSource> {
@@ -24,14 +24,16 @@ val repositoryModule = module {
             get<StoryAppDatabase>().userDao(),
             get<StoryAppDatabase>().tagDao(),
             get<StoryAppDatabase>().storyDao(),
+            get<StoryAppDatabase>().storyDraftDao(),
             get<StoryAppDatabase>().pageDao(),
             get<StoryAppDatabase>().choiceDao(),
             get<StoryAppDatabase>().reviewDao(),
-            get<StoryAppDatabase>().storyTagCrossRefDao())
+            get<StoryAppDatabase>().storyTagCrossRefDao()
+            )
     }
 
     single<StoryRepository> {
-        StoryRepositoryImpl(get(), get(), get(), get(), get())
+        StoryRepositoryImpl(get(), get(), get(), get(), get(), get(), get(), get())
     }
 
     single<UserRepository> {

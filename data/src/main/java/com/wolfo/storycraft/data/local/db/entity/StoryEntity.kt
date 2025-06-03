@@ -13,7 +13,7 @@ import androidx.room.PrimaryKey
             entity = UserEntity::class, // Связь с автором
             parentColumns = ["id"],
             childColumns = ["author_id"],
-            onDelete = ForeignKey.SET_NULL // Или CASCADE, если нужно удалять истории при удалении юзера
+            onDelete = ForeignKey.SET_NULL
         )
     ],
     indices = [Index("author_id")]
@@ -29,5 +29,5 @@ data class StoryEntity(
     @ColumnInfo(name = "author_id") val authorId: String?, // Внешний ключ к UserEntity
 
     @ColumnInfo(name = "last_refresh") val lastRefresh: Long = System.currentTimeMillis()
-    // Теги будут связаны через StoryTagCrossRef
+    // Теги связаны через StoryTagCrossRef
 )

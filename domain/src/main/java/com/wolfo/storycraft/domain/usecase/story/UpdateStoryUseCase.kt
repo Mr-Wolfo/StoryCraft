@@ -1,7 +1,7 @@
 package com.wolfo.storycraft.domain.usecase.story
 
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.StoryFull
+import com.wolfo.storycraft.domain.model.story.StoryFull
 import com.wolfo.storycraft.domain.repository.StoryRepository
 import java.io.File
 

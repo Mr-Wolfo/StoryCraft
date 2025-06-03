@@ -1,5 +1,7 @@
 package com.wolfo.storycraft.domain.model
 
+import com.wolfo.storycraft.domain.model.user.UserSimple
+
 data class Review(
     val id: String,
     val rating: Int,

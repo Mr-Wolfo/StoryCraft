@@ -1,4 +1,4 @@
-package com.wolfo.storycraft.domain.model
+package com.wolfo.storycraft.domain.model.auth
 
 data class AuthRequest(
     val name: String,

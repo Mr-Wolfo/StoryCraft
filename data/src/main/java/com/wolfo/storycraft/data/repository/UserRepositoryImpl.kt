@@ -11,9 +11,9 @@ import com.wolfo.storycraft.data.utils.NetworkHandler
 import com.wolfo.storycraft.data.utils.RepositoryHandler
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.User
-import com.wolfo.storycraft.domain.model.UserSimple
-import com.wolfo.storycraft.domain.model.UserUpdate
+import com.wolfo.storycraft.domain.model.user.User
+import com.wolfo.storycraft.domain.model.user.UserSimple
+import com.wolfo.storycraft.domain.model.user.UserUpdate
 import com.wolfo.storycraft.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,9 +26,9 @@ import java.io.File
 class UserRepositoryImpl(
     private val localDataSource: LocalDataSource,
     private val remoteDataSource: RemoteDataSource,
-    private val tokenManager: AuthTokenManager, // Нужен для получения ID текущего пользователя
+    private val tokenManager: AuthTokenManager,
     private val networkHandler: NetworkHandler,
-    private val repositoryHandler: RepositoryHandler// Утилита для обработки сетевых вызовов
+    private val repositoryHandler: RepositoryHandler
 ) : UserRepository {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -79,8 +79,8 @@ class UserRepositoryImpl(
     // Обновление данных текущего пользователя
     override suspend fun updateCurrentUser(userData: UserUpdate): ResultM<User> = withContext(Dispatchers.IO) {
         networkHandler.handleNetworkCall(
-            call = { remoteDataSource.updateUser(userData.toDto()) }, // Domain -> DTO
-            transform = { userDto -> userDto.toDomain() }, // DTO -> Domain
+            call = { remoteDataSource.updateUser(userData.toDto()) },
+            transform = { userDto -> userDto.toDomain() },
             onSuccess = { updatedUserDto ->
                 // Обновляем кэш в локальной БД
                 localDataSource.saveUser(updatedUserDto.toEntity())
@@ -92,7 +92,7 @@ class UserRepositoryImpl(
     override suspend fun updateCurrentUserAvatar(avatarFile: File): ResultM<User> = withContext(Dispatchers.IO) {
         networkHandler.handleNetworkCall(
             call = { remoteDataSource.updateUserAvatar(avatarFile) },
-            transform = { userDto -> userDto.toDomain() }, // DTO -> Domain
+            transform = { userDto -> userDto.toDomain() },
             onSuccess = { updatedUserDto ->
                 // Обновляем кэш в локальной БД
                 localDataSource.saveUser(updatedUserDto.toEntity())

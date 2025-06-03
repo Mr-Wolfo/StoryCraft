@@ -9,7 +9,10 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -52,7 +55,7 @@ private val DarkColorScheme = darkColorScheme(
     outlineVariant = Color(0xFF424242),
     scrim = Color(0x99000000),
 
-    surfaceBright = Color(0xFF424242),
+    surfaceBright = Color(0xFFFFFFFF),
     surfaceDim = Color(0xFF121212),
     surfaceContainer = Color(0xFF1E1E1E),
     surfaceContainerHigh = Color(0xFF2D2D2D),
@@ -106,6 +109,33 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerLowest = Color(0xFFFFFFFF),
 )
 
+val MaterialTheme.extendedColors: ExtendedColors
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalExtendedColors.current
+
+data class ExtendedColors(
+    val star: Color,
+    val onDarkBackground: Color
+)
+
+val ExtendedLightColors = ExtendedColors(
+    star = StarLight,
+    onDarkBackground = onDarkBackground
+)
+
+val ExtendedDarkColors = ExtendedColors(
+    star = StarDark,
+    onDarkBackground = onDarkBackground
+)
+
+private val LocalExtendedColors = staticCompositionLocalOf {
+    ExtendedColors(
+        star = Color.Unspecified,
+        onDarkBackground = onDarkBackground
+    )
+}
+
 @Composable
 fun StoryCraftTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -122,6 +152,9 @@ fun StoryCraftTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+
+    val extendedColors = if (darkTheme) ExtendedDarkColors else ExtendedLightColors
+
     val systemUiController = rememberSystemUiController()
     systemUiController.setSystemBarsColor(
         color = Color.Transparent
@@ -137,7 +170,11 @@ fun StoryCraftTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+        typography = Typography
+    ) {
+        CompositionLocalProvider(
+            LocalExtendedColors provides extendedColors,
+            content = content
+        )
+    }
 }

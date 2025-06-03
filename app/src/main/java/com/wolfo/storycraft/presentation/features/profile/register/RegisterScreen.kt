@@ -86,7 +86,6 @@ fun RegisterScreen(
                             value = formViewModel.registerEmail.value,
                             onValueChange = { formViewModel.registerEmail.value = it },
                             label = { Text("Почта") },
-                            visualTransformation = PasswordVisualTransformation(),
                             modifier = Modifier.fillMaxWidth()
                         )
 

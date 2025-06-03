@@ -18,7 +18,7 @@ interface ReviewDao {
     suspend fun insertOrUpdateReviews(reviews: List<ReviewEntity>)
 
     @Transaction
-    @Query("SELECT * FROM reviews WHERE story_id = :storyId ORDER BY created_at DESC") // Уточните поле
+    @Query("SELECT * FROM reviews WHERE story_id = :storyId")
     fun getReviewsWithAuthorsForStoryStream(storyId: String): Flow<List<ReviewWithAuthor>>
 
     @Transaction
