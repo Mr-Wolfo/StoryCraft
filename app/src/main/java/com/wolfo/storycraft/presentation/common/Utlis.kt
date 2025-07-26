@@ -23,6 +23,24 @@ object Utils {
         } catch (e: Exception) {
             LocalDateTime.now()
         }
+
+    fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val network = connectivityManager.activeNetwork ?: return false
+            val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+            return when {
+                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                else -> false
+            }
+        } else {
+            val networkInfo = connectivityManager.activeNetworkInfo ?: return false
+            return networkInfo.isConnected
+        }
+    }
 }
 
 // Расширения для сжатия изображения
@@ -68,20 +86,3 @@ fun File.compressImage(maxSize: Long = 2 * 1024 * 1024): File { // 2MB по ум
     }
 }
 
-fun isNetworkAvailable(context: Context): Boolean {
-    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val network = connectivityManager.activeNetwork ?: return false
-        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
-
-        return when {
-            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
-            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-            else -> false
-        }
-    } else {
-        val networkInfo = connectivityManager.activeNetworkInfo ?: return false
-        return networkInfo.isConnected
-    }
-}

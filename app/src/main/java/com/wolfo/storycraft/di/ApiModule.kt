@@ -9,7 +9,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-private const val BASE_URL = "http://192.168.237.229:8000" // ЛОКАЛЬНЫЙ
+private const val BASE_URL = "https://wolvion.ru" // МОЙ ДОМЕН
 
 val apiModule = module {
 
@@ -20,7 +20,7 @@ val apiModule = module {
     single<OkHttpClient> {
 
         OkHttpClient.Builder()
-            .addInterceptor(AuthInterceptor(get())) // Добавляем интерцептор
+            .addInterceptor(AuthInterceptor(get()))
             .authenticator(TokenAuthenticator(
                 tokenManager = get(),
                 retrofitBuilder = get(),

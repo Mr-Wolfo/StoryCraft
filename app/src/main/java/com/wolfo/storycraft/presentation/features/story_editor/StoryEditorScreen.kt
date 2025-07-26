@@ -1,15 +1,20 @@
 package com.wolfo.storycraft.presentation.features.story_editor
 
 import android.net.Uri
+import android.widget.Space
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,25 +33,30 @@ import coil3.request.crossfade
 import com.wolfo.storycraft.R
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
+import com.wolfo.storycraft.presentation.common.BackgroundImage
+import com.wolfo.storycraft.presentation.common.GlassCard
+import com.wolfo.storycraft.presentation.common.Utils
 import com.wolfo.storycraft.presentation.features.story_editor.models.EditableChoiceDraft
 import com.wolfo.storycraft.presentation.features.story_editor.models.EditablePageDraft
 import com.wolfo.storycraft.presentation.features.story_editor.models.EditableStoryDraft
+import com.yandex.mobile.ads.nativeads.b
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun StoryEditorScreen(
-    storyId: String?, // Передается из навигации
-    viewModel: StoryEditorViewModel = koinViewModel(), // Koin ViewModel
-    onNavigateToProfile: () -> Unit, // Навигация на экран профиля (для входа/регистрации)
-    onStoryPublished: (storyId: String) -> Unit, // Навигация после публикации (например, на экран просмотра истории)
+    storyId: String?,
+    viewModel: StoryEditorViewModel = koinViewModel(),
+    navPadding: PaddingValues,
+    onNavigateToProfile: () -> Unit,
+    onStoryPublished: (storyId: String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val statusBarState by viewModel.statusBarState.collectAsState()
-    // editableDraft теперь наблюдается в StoryEditorContent, если state is Editing
-    // ВАЖНО: editableDraft должен быть наблюдаемым, чтобы UI обновлялся при изменениях в ViewModel
     val editableDraft by viewModel.editableStoryDraft.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -62,17 +73,15 @@ fun StoryEditorScreen(
             }
             is StoryEditorStatusBarState.SaveError -> {
                 snackbarHostState.showSnackbar(context.getString(R.string.draft_save_error, state.error.localizedMessage ?: context.getString(R.string.unknown_error)), duration = SnackbarDuration.Long)
-                // Не сбрасываем автоматически, чтобы пользователь увидел
             }
             is StoryEditorStatusBarState.Publishing -> snackbarHostState.showSnackbar(context.getString(R.string.publish_in_progress), duration = SnackbarDuration.Indefinite)
             is StoryEditorStatusBarState.PublishError -> {
                 val message = when(state.error) {
-                    is DataError.Validation -> state.error.message ?: context.getString(R.string.validation_failed) // Показываем детальное сообщение валидации
+                    is DataError.Validation -> state.error.message ?: context.getString(R.string.validation_failed)
                     is DataError.Unknown -> state.error.message ?: context.getString(R.string.file_error)
                     else -> state.error.localizedMessage ?: context.getString(R.string.unknown_error)
                 }
                 snackbarHostState.showSnackbar(context.getString(R.string.publish_error, message), duration = SnackbarDuration.Long)
-                // Не сбрасываем автоматически
             }
             is StoryEditorStatusBarState.Error -> {
                 snackbarHostState.showSnackbar(context.getString(R.string.general_error, state.error.localizedMessage ?: context.getString(R.string.unknown_error)), duration = SnackbarDuration.Long)
@@ -86,7 +95,6 @@ fun StoryEditorScreen(
         if (uiState is StoryEditorUiState.PublishSuccess) {
             val publishedStoryId = (uiState as StoryEditorUiState.PublishSuccess).storyId
             coroutineScope.launch {
-                // Дать время пользователю увидеть статус успеха (если нужно)
                 delay(1000)
                 viewModel.retryEditor()
                 onStoryPublished(publishedStoryId) // Переход на экран опубликованной истории
@@ -94,99 +102,103 @@ fun StoryEditorScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            // Показывать кнопки сохранения/публикации только в режиме редактирования
-            val currentEditableDraftFromUiState = (uiState as? StoryEditorUiState.Editing)?.draft
-            if (currentEditableDraftFromUiState != null) { // Используем draft из uiState
-                StoryEditorTopBar(
-                    onSaveDraft = { viewModel.saveDraft() },
-                    onPublish = { viewModel.publishStory() },
-                    onBackPressed = { viewModel.retryEditor() } // Используем переданный колбэк
-                )
-            } else {
-                // Топ-бар для других состояний (например, просто заголовок)
-                CenterAlignedTopAppBar(
-                    title = { Text(text = stringResource(R.string.story_editor_title)) },
-                    navigationIcon = {
-                        IconButton(onClick = { viewModel.retryEditor() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
+    BackgroundImage(painter = painterResource(R.drawable.details_background))
+
+    Box(Modifier.fillMaxSize().background(Color.Transparent).windowInsetsPadding(WindowInsets.systemBars)) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            topBar = {
+                Box(Modifier.padding(12.dp).height(48.dp)) {
+                    // Показывать кнопки сохранения/публикации только в режиме редактирования
+                    val currentEditableDraftFromUiState = (uiState as? StoryEditorUiState.Editing)?.draft
+                    if (currentEditableDraftFromUiState != null) {
+                        StoryEditorTopBar(
+                            onSaveDraft = { viewModel.saveDraft() },
+                            onPublish = { viewModel.publishStory() },
+                            onBackPressed = { viewModel.retryEditor() },
+                            modifier = Modifier.fillMaxHeight()
+                        )
+                    } else {
+                        GlassCard(modifier = Modifier.fillMaxSize()) {
+                            Box(modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center) {
+                                Text(text = stringResource(R.string.story_editor_drafts_title), textAlign = TextAlign.Center, modifier = Modifier.wrapContentSize())
+                            }
                         }
                     }
-                )
-            }
-        }
-    ) { paddingValues ->
-        Box(modifier = Modifier
-            .padding(paddingValues)
-            .consumeWindowInsets(paddingValues)
-            .fillMaxSize()
-        ) {
-            when (val state = uiState) {
-                StoryEditorUiState.CheckingAuthentication -> {
-                    LoadingScreen(message = stringResource(R.string.checking_authentication))
                 }
-                StoryEditorUiState.NotAuthenticated -> {
-                    NotAuthenticatedScreen(onNavigateToProfile = onNavigateToProfile)
-                }
-                StoryEditorUiState.LoadingDrafts, is StoryEditorUiState.LoadingDraft -> {
-                    LoadingScreen(message = stringResource(R.string.loading_stories))
-                }
-                is StoryEditorUiState.ShowingDraftList -> {
-                    DraftListScreen(
-                        drafts = state.drafts, // Domain StoryBaseInfo
-                        onDraftSelected = { viewModel.loadDraft(it.id) }, // ID -> loadDraft
-                        onCreateNewDraft = { viewModel.createNewDraft() }
-                    )
-                }
-                is StoryEditorUiState.Editing -> {
-                    // Передаем editableDraft (UI model) и колбэки для изменений
-                    // ВАЖНО: передаем editableDraft, который мы наблюдаем прямо из ViewModel
-                    editableDraft?.let { draft ->
-                        StoryEditorContent(
-                            draft = draft, // Используем наблюдаемый editableDraft
-                            onUpdateTitle = viewModel::updateTitle,
-                            onUpdateDescription = viewModel::updateDescription,
-                            onUpdateTags = viewModel::updateTags,
-                            // Передаем лямбду, которая вызывает copyUriToInternalStorage из ViewModel
-                            onSetCoverImage = { uri ->
-                                coroutineScope.launch { // Запускаем в корутине, т.к. копирование IO
-                                    val localPath = uri?.let { viewModel.copyUriToInternalStorage(it, "story_cover") }
-                                    viewModel.setCoverImage(localPath)
-                                }
-                            },
-                            onAddPage = viewModel::addPage,
-                            onRemovePage = viewModel::removePage,
-                            onMovePage = viewModel::movePage, // TODO: Implement Drag and Drop
-                            onUpdatePageText = viewModel::updatePageText,
-                            // Передаем лямбду, которая вызывает copyUriToInternalStorage из ViewModel
-                            onSetPageImage = { pageId, uri ->
-                                coroutineScope.launch { // Запускаем в корутине, т.к. копирование IO
-                                    val localPath = uri?.let { viewModel.copyUriToInternalStorage(it, "story_page") }
-                                    viewModel.setPageImage(pageId, localPath)
-                                }
-                            },
-                            onUpdatePageIsEnding = viewModel::updatePageIsEnding,
-                            onAddChoice = viewModel::addChoice,
-                            onRemoveChoice = viewModel::removeChoice,
-                            onUpdateChoiceText = viewModel::updateChoiceText,
-                            onUpdateChoiceTargetPage = viewModel::updateChoiceTargetPage,
-                            pageCount = draft.pages.size // Передаем общее количество страниц из наблюдаемого draft
-                        )
+            },
+            containerColor = Color.Transparent
+        ) { paddingValues ->
+            Column() {
+                Box(modifier = Modifier
+                    .padding(top = paddingValues.calculateTopPadding())
+                ) {
+                    when (val state = uiState) {
+                        StoryEditorUiState.CheckingAuthentication -> {
+                            LoadingScreen(message = stringResource(R.string.checking_authentication))
+                        }
+                        StoryEditorUiState.NotAuthenticated -> {
+                            NotAuthenticatedScreen(onNavigateToProfile = onNavigateToProfile)
+                        }
+                        StoryEditorUiState.LoadingDrafts, is StoryEditorUiState.LoadingDraft -> {
+                            LoadingScreen(message = stringResource(R.string.loading_stories))
+                        }
+                        is StoryEditorUiState.ShowingDraftList -> {
+                            DraftListScreen(
+                                drafts = state.drafts, // Domain StoryBaseInfo,
+                                navPadding = navPadding,
+                                onDraftSelected = { viewModel.loadDraft(it.id) }, // ID -> loadDraft
+                                onCreateNewDraft = { viewModel.createNewDraft() }
+                            )
+                        }
+                        is StoryEditorUiState.Editing -> {
+                            editableDraft?.let { draft ->
+                                StoryEditorContent(
+                                    navPadding = navPadding,
+                                    draft = draft,
+                                    onUpdateTitle = viewModel::updateTitle,
+                                    onUpdateDescription = viewModel::updateDescription,
+                                    onUpdateTags = viewModel::updateTags,
+                                    onSetCoverImage = { uri ->
+                                        coroutineScope.launch {
+                                            val localPath = uri?.let { viewModel.copyUriToInternalStorage(it, "story_cover") }
+                                            viewModel.setCoverImage(localPath)
+                                        }
+                                    },
+                                    onAddPage = viewModel::addPage,
+                                    onRemovePage = viewModel::removePage,
+                                    onMovePage = viewModel::movePage, // TODO: Implement Drag and Drop
+                                    onUpdatePageText = viewModel::updatePageText,
+                                    onSetPageImage = { pageId, uri ->
+                                        coroutineScope.launch {
+                                            val localPath = uri?.let { viewModel.copyUriToInternalStorage(it, "story_page") }
+                                            viewModel.setPageImage(pageId, localPath)
+                                        }
+                                    },
+                                    onUpdatePageIsEnding = viewModel::updatePageIsEnding,
+                                    onAddChoice = viewModel::addChoice,
+                                    onRemoveChoice = viewModel::removeChoice,
+                                    onUpdateChoiceText = viewModel::updateChoiceText,
+                                    onUpdateChoiceTargetPage = viewModel::updateChoiceTargetPage,
+                                    pageCount = draft.pages.size
+                                )
+                            }
+                        }
+                        is StoryEditorUiState.PublishSuccess -> {
+                            PublishSuccessScreen(onViewStory = { onStoryPublished(state.storyId) })
+                        }
+                        is StoryEditorUiState.PublishError -> {
+                            // Ошибка публикации показывается в статус баре. UI остается в режиме редактирования.
+                            // Если editableDraft не null, UI останется в режиме редактирования.
+                        }
+                        is StoryEditorUiState.Error -> {
+                            ErrorScreen(errorMessage = state.error.localizedMessage ?: stringResource(R.string.unknown_error))
+                        }
+                        else -> {  }
                     }
                 }
-                is StoryEditorUiState.PublishSuccess -> {
-                    PublishSuccessScreen(onViewStory = { onStoryPublished(state.storyId) })
-                }
-                is StoryEditorUiState.PublishError -> {
-                    // Ошибка публикации показывается в статус баре. UI остается в режиме редактирования.
-                    // Если editableDraft не null, UI останется в режиме редактирования.
-                }
-                is StoryEditorUiState.Error -> {
-                    ErrorScreen(errorMessage = state.error.localizedMessage ?: stringResource(R.string.unknown_error))
-                }
-                else -> { /* Ничего не отображать для неопределенных состояний */ }
+
             }
         }
     }
@@ -198,16 +210,14 @@ fun StoryEditorScreen(
 fun StoryEditorTopBar(
     onSaveDraft: () -> Unit,
     onPublish: () -> Unit,
-    onBackPressed: () -> Unit
+    onBackPressed: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    TopAppBar(
-        title = { Text(text = stringResource(R.string.story_editor_title_editing)) },
-        navigationIcon = {
+    GlassCard(modifier = modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth()) {
             IconButton(onClick = onBackPressed) {
                 Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
             }
-        },
-        actions = {
             IconButton(onClick = onSaveDraft) {
                 Icon(Icons.Default.Done, contentDescription = stringResource(R.string.save_draft))
             }
@@ -219,7 +229,7 @@ fun StoryEditorTopBar(
                 Text(stringResource(R.string.publish))
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -287,18 +297,14 @@ fun ErrorScreen(errorMessage: String) {
 
 @Composable
 fun DraftListScreen(
-    drafts: List<StoryBaseInfo>, // Используем StoryBaseInfo для краткой информации
+    drafts: List<StoryBaseInfo>,
+    navPadding: PaddingValues,
     onDraftSelected: (StoryBaseInfo) -> Unit,
     onCreateNewDraft: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = stringResource(R.string.story_editor_drafts_title),
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(16.dp)
-        )
-        Divider()
-        LazyColumn(modifier = Modifier.weight(1f)) {
+    Column(modifier = Modifier.fillMaxSize().padding(bottom = navPadding.calculateBottomPadding()).windowInsetsPadding(
+        WindowInsets.navigationBars)) {
+        LazyColumn(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
             if (drafts.isEmpty()) {
                 item {
                     Column(
@@ -341,38 +347,45 @@ fun DraftItem(
     draft: StoryBaseInfo,
     onDraftSelected: (StoryBaseInfo) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onDraftSelected(draft) }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = draft.title, style = MaterialTheme.typography.titleMedium)
-            // TODO: Форматирование времени lastSavedTimestamp
-            Text(text = "Сохранено: ${draft.publishedTime}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-        }
-        Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.open_draft))
+    val publishedTime = Utils.toLocaleDateTime(draft.publishedTime)
+
+    val formattedDate = remember(publishedTime) {
+        DateTimeFormatter
+            .ofPattern("dd.MM.yy", Locale.getDefault())
+            .format(publishedTime)
     }
-    Divider()
+    GlassCard {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onDraftSelected(draft) }
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = draft.title, style = MaterialTheme.typography.titleMedium)
+                // TODO: Форматирование времени lastSavedTimestamp
+                Text(text = "Сохранено: $formattedDate", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            }
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.open_draft))
+        }
+    }
 }
 
 
 @Composable
 fun StoryEditorContent(
+    navPadding: PaddingValues,
     draft: EditableStoryDraft,
     onUpdateTitle: (String) -> Unit,
     onUpdateDescription: (String) -> Unit,
     onUpdateTags: (List<String>) -> Unit,
-    // Изменено: теперь принимает Uri?, но в реализации будет вызываться copyUriToInternalStorage из ViewModel
     onSetCoverImage: (Uri?) -> Unit,
     onAddPage: () -> Unit,
     onRemovePage: (pageId: String) -> Unit,
     onMovePage: (fromIndex: Int, toIndex: Int) -> Unit, // Для будущей реализации Drag and Drop
     onUpdatePageText: (pageId: String, text: String) -> Unit,
-    // Изменено: теперь принимает Uri?, но в реализации будет вызываться copyUriToInternalStorage из ViewModel
     onSetPageImage: (pageId: String, uri: Uri?) -> Unit,
     onUpdatePageIsEnding: (pageId: String, isEnding: Boolean) -> Unit,
     onAddChoice: (pageId: String) -> Unit,
@@ -416,7 +429,6 @@ fun StoryEditorContent(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Поле для Тегов (упрощенно - ввод через запятую или отдельный UI)
             // TODO: Реализовать более удобный UI для тегов (чипсы, автодополнение)
             var tagsText by remember(draft.tags) { mutableStateOf(draft.tags.joinToString(", ")) }
             OutlinedTextField(
@@ -434,13 +446,13 @@ fun StoryEditorContent(
             // Блок Обложки - Теперь передаем local path и callback для Uri
             ImagePickerSection(
                 title = stringResource(R.string.story_editor_cover_image),
-                imageLocalPath = draft.coverImageLocalPath, // Передаем локальный путь
-                onImagePicked = onSetCoverImage, // Передаем колбэк, ожидающий Uri
-                onRemoveImage = { onSetCoverImage(null) } // Просто сбрасываем
+                imageLocalPath = draft.coverImageLocalPath,
+                onImagePicked = onSetCoverImage,
+                onRemoveImage = { onSetCoverImage(null) }
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            Divider()
+            HorizontalDivider()
             Spacer(modifier = Modifier.height(16.dp))
 
             // --- Блок Страниц ---
@@ -452,9 +464,8 @@ fun StoryEditorContent(
             PageEditor(
                 page = page,
                 pageIndex = index,
-                pageCount = pageCount, // Передаем для отображения номера страницы
+                pageCount = pageCount,
                 onUpdateText = { text -> onUpdatePageText(page.id, text) },
-                // Передаем колбэк, ожидающий Uri
                 onSetImage = { uri -> onSetPageImage(page.id, uri) },
                 onUpdateIsEnding = { isEnding -> onUpdatePageIsEnding(page.id, isEnding) },
                 onAddChoice = { onAddChoice(page.id) },
@@ -471,7 +482,7 @@ fun StoryEditorContent(
                 // TODO: Добавить кнопки для перемещения страниц onMovePage
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Divider()
+            HorizontalDivider()
             Spacer(modifier = Modifier.height(16.dp))
         }
 
@@ -485,6 +496,10 @@ fun StoryEditorContent(
                 Text(stringResource(R.string.story_editor_add_page))
             }
             Spacer(modifier = Modifier.height(32.dp)) // Отступ снизу
+        }
+        item {
+            Spacer(modifier = Modifier.padding(bottom = navPadding.calculateBottomPadding()).windowInsetsPadding(
+                WindowInsets.navigationBars))
         }
     }
 
@@ -519,7 +534,6 @@ fun PageEditor(
     pageIndex: Int,
     pageCount: Int,
     onUpdateText: (String) -> Unit,
-    // Изменено: теперь принимает Uri?, но в реализации будет вызываться copyUriToInternalStorage из ViewModel
     onSetImage: (Uri?) -> Unit,
     onUpdateIsEnding: (Boolean) -> Unit,
     onAddChoice: () -> Unit,
@@ -554,10 +568,10 @@ fun PageEditor(
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Блок Изображения страницы - Теперь передаем local path и callback для Uri
+        // Блок Изображения страницы - передаем local path и callback для Uri
         ImagePickerSection(
             title = stringResource(R.string.story_editor_page_image),
-            imageLocalPath = page.imageLocalPath, // Передаем локальный путь
+            imageLocalPath = page.imageLocalPath, // Локальный путь
             onImagePicked = onSetImage, // Передаем колбэк, ожидающий Uri
             onRemoveImage = { onSetImage(null) } // Просто сбрасываем
         )
@@ -651,7 +665,7 @@ fun ImagePickerSection(
         Text(text = title, style = MaterialTheme.typography.titleSmall)
         Spacer(modifier = Modifier.height(4.dp))
 
-        if (imageLocalPath != null) { // Используем imageLocalPath для отображения
+        if (imageLocalPath != null) { // imageLocalPath для отображения
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -728,7 +742,7 @@ fun TargetPagePickerDialog(
                             .clickable { onPageSelected(null) }
                             .padding(vertical = 8.dp)
                     )
-                    Divider()
+                    HorizontalDivider()
                 }
                 itemsIndexed(pages) { index, page ->
                     // Показываем номер страницы и первые символы текста или "Пустая страница"
@@ -742,7 +756,7 @@ fun TargetPagePickerDialog(
                             .clickable { onPageSelected(index) }
                             .padding(vertical = 8.dp)
                     )
-                    Divider()
+                    HorizontalDivider()
                 }
             }
         },

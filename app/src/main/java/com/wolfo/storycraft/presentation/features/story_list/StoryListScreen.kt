@@ -9,7 +9,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -76,7 +75,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -113,7 +111,7 @@ import java.util.UUID
 fun StoryListScreen(
     viewModel: StoryListViewModel = koinViewModel(),
     searchViewModel: SearchAndFilterViewModel = koinViewModel(),
-    padding: PaddingValues,
+    navPadding: PaddingValues,
     onStoryClick: (String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -127,6 +125,12 @@ fun StoryListScreen(
     val currentQuery by searchViewModel.currentQuery.collectAsState()
 
     val mixedList by viewModel.mixedList.collectAsState()
+
+    LaunchedEffect(currentQuery) {
+        coroutineScope.launch {
+            viewModel.loadStories(currentQuery)
+        }
+    }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -146,11 +150,10 @@ fun StoryListScreen(
     ) { paddingValues ->
         BackgroundImage(painter = painterResource(R.drawable.details_background))
 
-
         Box(modifier = Modifier.fillMaxSize()
-            .padding(paddingValues)
-            .padding(bottom = padding.calculateBottomPadding())
-            .windowInsetsPadding(WindowInsets.navigationBars)) {
+            .padding(top = paddingValues.calculateTopPadding())
+            .padding(bottom = navPadding.calculateBottomPadding())
+            ) {
 
             Box(modifier = Modifier
                 .fillMaxSize()) {
@@ -181,7 +184,7 @@ fun StoryListScreen(
                 }
             }
 
-            FiltersPanel(filtersVisible, searchViewModel, Modifier.padding(paddingValues))
+            FiltersPanel(filtersVisible, searchViewModel)
 
 
             when(val barState = appStatusBarUiState) {
@@ -728,7 +731,7 @@ private fun StoryListItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(180.dp)
+            .height(200.dp)
             .clickable(
                 onClick = onClick
             ),
@@ -803,7 +806,7 @@ private fun StoryListItem(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            story.tags.forEach { tag ->
+                            story.tags.takeLast(3).forEach { tag ->
                                 TagChip(tag = tag.name)
                             }
                         }

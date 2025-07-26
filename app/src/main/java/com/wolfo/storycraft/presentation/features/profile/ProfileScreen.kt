@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -54,6 +53,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -98,6 +98,7 @@ import java.util.Locale
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
+    navPadding: PaddingValues,
     onLogout: () -> Unit,
     onEditProfile: () -> Unit
 ) {
@@ -112,6 +113,8 @@ fun ProfileScreen(
     var editingSignature by remember { mutableStateOf(false) }
     var newSignature by remember { mutableStateOf("") }
 
+    var logout by remember { mutableStateOf(false) }
+
     // Для выбора нового аватара
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -121,13 +124,18 @@ fun ProfileScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.loadProfile()
+    }
+
     when(val state = uiState) {
-        is ProfileUiState.Idle -> { viewModel.loadProfile() }
+        is ProfileUiState.Idle -> {  }
         is ProfileUiState.Loading -> Loading()
         is ProfileUiState.Error -> Error(state.error)
         is ProfileUiState.Success -> {
             Profile(
                 content = state.data,
+                padding = navPadding,
                 scrollState = scrollState,
                 editMode = editMode,
                 onToggleEditMode = { viewModel.toggleEditMode() },
@@ -138,7 +146,7 @@ fun ProfileScreen(
                         editingSignature = true
                     }
                 },
-                onLogout = onLogout,
+                onLogout = { logout = true },
                 onDeleteStory = { storyId -> showDeleteConfirmation = storyId }
             )
         }
@@ -162,6 +170,28 @@ fun ProfileScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = null }) {
+                    Text("Отмена")
+                }
+            }
+        )
+    }
+
+    if (logout) {
+        AlertDialog(
+            onDismissRequest = { logout = false },
+            title = { Text("Вы действительно хотите выйти из аккаунта?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onLogout()
+                        logout = false
+                    }
+                ) {
+                    Text("Подтвердить выход")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { logout = false }) {
                     Text("Отмена")
                 }
             }
@@ -199,47 +229,40 @@ fun ProfileScreen(
         )
     }
 
-    when(val barState = appStatusBarUiState) {
-        is AppStatusBarUiState.Idle -> { }
-        is AppStatusBarUiState.Loading -> {
-            Box(
-                modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
-                    .fillMaxSize().background(Color.Transparent),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                LoadingBar(isVisible = true)
+    Box(
+        modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+            .fillMaxSize().background(Color.Transparent),
+        contentAlignment = Alignment.BottomCenter
+    ) {
+        when(val barState = appStatusBarUiState) {
+            is AppStatusBarUiState.Idle -> { }
+            is AppStatusBarUiState.Loading -> {
+                    LoadingBar(isVisible = true)
+            }
+            is AppStatusBarUiState.Error -> {
+                    ErrorBottomMessage(
+                        message = barState.error.message ?: "Unknown error",
+                        isVisible = true
+                    ) { }
+            }
+            is AppStatusBarUiState.Success -> {
+                    SuccessBottomMessage(
+                        message = barState.message,
+                        isVisible = true
+                    ) { }
             }
         }
-        is AppStatusBarUiState.Error -> {
-            Box(
-                modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(10.dp)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                ErrorBottomMessage(
-                    message = barState.error.message ?: "Unknown error",
-                    isVisible = true
-                ) { }
-            }
-        }
-        is AppStatusBarUiState.Success -> {
-            Box(
-                modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(10.dp)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                SuccessBottomMessage(
-                    message = barState.message,
-                    isVisible = true
-                ) { }
-            }
-        }
+
     }
+
+
+
 }
 
 @Composable
 fun Profile(
     content: User,
+    padding: PaddingValues,
     scrollState: ScrollState,
     editMode: Boolean,
     onToggleEditMode: () -> Unit,
@@ -258,8 +281,8 @@ fun Profile(
         CustomScrollableColumn(
             scrollState = scrollState,
             Modifier.fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .padding()
+                .padding(top = padding.calculateTopPadding())
+                .padding(bottom = padding.calculateBottomPadding())
                 .padding(horizontal = 10.dp)
         ) {
             // Кнопка редактирования в правом верхнем углу
@@ -449,7 +472,7 @@ fun Profile(
             onClick = onLogout,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(24.dp),
+                .padding(24.dp).padding(bottom = padding.calculateBottomPadding()),
             containerColor = MaterialTheme.colorScheme.errorContainer
         ) {
             Icon(Icons.AutoMirrored.Filled.ExitToApp, "Выйти")

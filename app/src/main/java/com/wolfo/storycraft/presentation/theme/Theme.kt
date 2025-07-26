@@ -20,7 +20,7 @@ import androidx.core.view.WindowCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorScheme = darkColorScheme(
-    primary = MainDark,
+    primary = Color.Black,
     onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFF424242),
     onPrimaryContainer = Color(0xFFE0E0E0),
@@ -31,7 +31,7 @@ private val DarkColorScheme = darkColorScheme(
     secondaryContainer = Color(0xFFE0E0E0),
     onSecondaryContainer = Color(0xFF212121),
 
-    tertiary = MainBlue,
+    tertiary = MainYellow,
     onTertiary = Color(0xFFFFFFFF),
     tertiaryContainer = Color(0xFF1E88E5),
     onTertiaryContainer = Color(0xFFBBDEFB),
@@ -76,7 +76,7 @@ private val LightColorScheme = lightColorScheme(
     secondaryContainer = Color(0xFF424242),
     onSecondaryContainer = Color(0xFFEEEEEE),
 
-    tertiary = MainOrange,
+    tertiary = MainCyan,
     onTertiary = Color(0xFF000000),
     tertiaryContainer = Color(0xFFFFD180),
     onTertiaryContainer = Color(0xFF311300),
@@ -116,23 +116,39 @@ val MaterialTheme.extendedColors: ExtendedColors
 
 data class ExtendedColors(
     val star: Color,
-    val onDarkBackground: Color
+    val onDarkBackground: Color,
+    val mainBlue: Color,
+    val mainYellow: Color,
+    val mainCyan: Color,
+    val mainLightGreen: Color
 )
 
 val ExtendedLightColors = ExtendedColors(
     star = StarLight,
-    onDarkBackground = onDarkBackground
+    onDarkBackground = onDarkBackground,
+    mainBlue = MainBlue,
+    mainYellow = MainYellow,
+    mainCyan = MainCyan,
+    mainLightGreen = MainLightGreen
 )
 
 val ExtendedDarkColors = ExtendedColors(
     star = StarDark,
-    onDarkBackground = onDarkBackground
+    onDarkBackground = onDarkBackground,
+    mainBlue = MainBlue,
+    mainYellow = MainYellow,
+    mainCyan = MainCyan,
+    mainLightGreen = MainLightGreen
 )
 
 private val LocalExtendedColors = staticCompositionLocalOf {
     ExtendedColors(
         star = Color.Unspecified,
-        onDarkBackground = onDarkBackground
+        onDarkBackground = onDarkBackground,
+        mainBlue = MainBlue,
+        mainYellow = MainYellow,
+        mainCyan = MainCyan,
+        mainLightGreen = MainLightGreen
     )
 }
 

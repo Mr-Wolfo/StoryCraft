@@ -14,8 +14,6 @@ class AuthInterceptor(
         val originalRequest = chain.request()
 
         // Получаем токен доступа СИНХРОННО (т.к. интерцептор работает синхронно)
-        // Важно: используем runBlocking здесь, т.к. другого простого способа нет.
-        // Это нормально для OkHttp Interceptor, он работает в своем потоке.
         val accessToken = tokenManager.getTokensSync().accessToken
 
         // Строим новый запрос
@@ -26,7 +24,7 @@ class AuthInterceptor(
             requestBuilder.header("Authorization", "Bearer $accessToken")
         }
 
-        Log.d("AuthInterceptor", "Send request")
+        Log.d("AuthInterceptor", "Send request - ${originalRequest.url} - ${originalRequest.method}")
 
         val response = chain.proceed(requestBuilder.build())
 

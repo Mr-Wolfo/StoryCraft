@@ -1,5 +1,6 @@
 package com.wolfo.storycraft.data.remote
 
+import android.util.Log
 import com.wolfo.storycraft.data.local.data_store.AuthTokenManager
 import com.wolfo.storycraft.data.local.data_store.AuthTokens
 import com.wolfo.storycraft.data.remote.dto.RefreshTokenRequestDto
@@ -22,11 +23,11 @@ class TokenAuthenticator(
 ) : Authenticator {
 
     override fun authenticate(route: Route?, response: Response): Request? {
-        println("Authenticator triggered! Response code: ${response.code}")
+        Log.d("TokenAuthenticator", "Authenticator triggered! Response code: ${response.code}")
 
         // 1. Проверяем refresh token
         val currentRefreshToken = tokenManager.getTokensSync().refreshToken ?: run {
-            println("Refresh token is null. Clearing tokens...")
+            Log.d("TokenAuthenticator", "Refresh token is null. Clearing tokens...")
             runBlocking { tokenManager.clearTokens() }
             return null
         }
@@ -41,7 +42,7 @@ class TokenAuthenticator(
         // 3. Пытаемся обновить токен
         val newTokens = runBlocking {
             try {
-                println("Refreshing token...")
+                Log.d("TokenAuthenticator", "Refreshing token...")
                 val service = createRefreshService()
                 val refreshResponse = service.refreshToken(RefreshTokenRequestDto(currentRefreshToken))
 
@@ -52,7 +53,7 @@ class TokenAuthenticator(
                                 accessToken = tokenDto.accessToken,
                                 refreshToken = tokenDto.refreshToken ?: currentRefreshToken
                             )
-                            println("Saving new tokens: $tokens")
+                            Log.d("TokenAuthenticator","Saving new tokens: $tokens")
                             tokenManager.saveTokens(tokens)
                             tokens
                         }
@@ -64,14 +65,14 @@ class TokenAuthenticator(
                     else -> return@runBlocking null
                 }
             } catch (e: Exception) {
-                println("Refresh error: ${e.message}")
+                Log.d("TokenAuthenticator","Refresh error: ${e.message}")
                 return@runBlocking null
             }
         }
 
         // 4. Возвращаем обновленный запрос
         return newTokens?.accessToken?.let { token ->
-            println("Retrying with new token: $token")
+            Log.d("TokenAuthenticator", "Retrying with new token: $token")
             response.request.newBuilder()
                 .header("Authorization", "Bearer $token")
                 .build()
@@ -81,7 +82,7 @@ class TokenAuthenticator(
     private fun isTokenRefreshed(response: Response): Boolean {
         val previousToken = response.request.header("Authorization")?.substringAfter("Bearer ")
         val currentToken = tokenManager.getTokensSync().accessToken
-        println("Previous token: $previousToken, Current token: $currentToken")
+        Log.d("TokenAuthenticator", "Previous token: $previousToken, Current token: $currentToken")
         return previousToken == currentToken
     }
 

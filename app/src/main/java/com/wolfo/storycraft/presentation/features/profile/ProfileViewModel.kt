@@ -46,7 +46,6 @@ class ProfileViewModel(
     private var currentJob: Job? = null
 
     init {
-        userProfileStream()
     }
 
     fun toggleEditMode() {

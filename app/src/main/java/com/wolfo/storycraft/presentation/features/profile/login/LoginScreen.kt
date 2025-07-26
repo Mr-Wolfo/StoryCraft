@@ -128,7 +128,8 @@ fun LoginScreen(
 
                 // Ссылка на регистрацию
                 TextButton(onClick = onNavigateToRegister) {
-                    Text("Ещё нет аккаунта? Зарегистрируйтесь")
+                    Text("Ещё нет аккаунта? Зарегистрируйтесь",
+                    color = MaterialTheme.colorScheme.tertiaryContainer)
                 }
             }
         }

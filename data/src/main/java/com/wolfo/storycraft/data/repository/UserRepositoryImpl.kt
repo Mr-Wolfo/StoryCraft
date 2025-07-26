@@ -122,7 +122,6 @@ class UserRepositoryImpl(
         if (userId != null) {
             localDataSource.clearUsers() // Удаляем из Room
         }
-        // ID уже очищен в tokenManager.clearUserId() внутри AuthRepository.logout()
     }
 
     /**
