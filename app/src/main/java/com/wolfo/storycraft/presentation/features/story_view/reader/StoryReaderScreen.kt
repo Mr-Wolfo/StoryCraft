@@ -19,6 +19,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -59,7 +61,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,17 +90,16 @@ import kotlin.math.floor
 @Composable
 fun StoryReaderScreen(
     storyId: String,
+    navPadding: PaddingValues,
     viewModel: StoryReaderViewModel = koinViewModel(),
     onExploreStories: () -> Unit,
     onCreateStory: () -> Unit,
     onReturnToStory: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val pageState = remember { mutableStateOf(0) }
+    val pageState = remember { mutableIntStateOf(0) }
     val lastPageState = remember { mutableListOf<Int>() }
     val scrollState = rememberScrollState()
-    val density = LocalDensity.current
-    val context = LocalContext.current
 
     // Обработка состояний загрузки
     when (uiState) {
@@ -121,7 +122,7 @@ fun StoryReaderScreen(
     }
 
     val story = (uiState as? StoryReaderUiState.Success)?.data ?: return
-    val currentPage = story.pages.getOrNull(pageState.value)
+    val currentPage = story.pages.getOrNull(pageState.intValue)
 
     Box(
         modifier = Modifier
@@ -139,7 +140,7 @@ fun StoryReaderScreen(
 
         // Изображение страницы
         AsyncImage(
-            model = story.pages.getOrNull(pageState.value)?.imageUrl,
+            model = story.pages.getOrNull(pageState.intValue)?.imageUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             error = painterResource(R.drawable.details_background),
@@ -150,12 +151,12 @@ fun StoryReaderScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.statusBars)
                 .padding(horizontal = 36.dp)
                 .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp).padding(start = 16.dp)
+                .windowInsetsPadding(WindowInsets.statusBars))
 
             // Анимированная страница
             AnimatedContent(
@@ -185,7 +186,7 @@ fun StoryReaderScreen(
                             lastPageState.add(currentPageIndex)
                             val targetIndex = story.pages.indexOfFirst { it.id == choice.targetPageId }
                             if (targetIndex != -1) {
-                                pageState.value = targetIndex
+                                pageState.intValue = targetIndex
                             }
                         }
                     )
@@ -193,11 +194,13 @@ fun StoryReaderScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.padding(bottom = navPadding.calculateBottomPadding()).windowInsetsPadding(
+                WindowInsets.navigationBars))
         }
 
         // Прогресс чтения
         ReadingProgressIndicator(
-            progress = (pageState.value + 1f) / story.pages.size,
+            progress = (pageState.intValue + 1f) / story.pages.size,
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
@@ -207,14 +210,14 @@ fun StoryReaderScreen(
         if (lastPageState.isNotEmpty()) {
             IconButton(
                 onClick = {
-                    pageState.value = lastPageState.removeAt(lastPageState.lastIndex)
+                    pageState.intValue = lastPageState.removeAt(lastPageState.lastIndex)
                 },
                 modifier = Modifier
-                    .offset(x = 16.dp, y = 8.dp)
+                    .offset(x = (-4).dp, y = 16.dp)
                     .windowInsetsPadding(WindowInsets.statusBars)
-                    .size(48.dp)
+                    .size(32.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        color = MaterialTheme.colorScheme.primary,
                         shape = CircleShape
                     )
             ) {
@@ -237,7 +240,7 @@ private fun RegularPageContent(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 8.dp)
             .animateContentSize(),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
@@ -447,8 +450,7 @@ private fun ChoiceButton(
             Text(
                 text = text,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(16.dp),
-                maxLines = 2
+                modifier = Modifier.padding(16.dp)
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Default.ArrowForward,
@@ -471,7 +473,7 @@ private fun ReadingProgressIndicator(
         modifier = modifier
             .fillMaxWidth()
             .height(4.dp),
-        color = MaterialTheme.colorScheme.primary,
+        color = MaterialTheme.colorScheme.tertiary,
         trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
     )
 }

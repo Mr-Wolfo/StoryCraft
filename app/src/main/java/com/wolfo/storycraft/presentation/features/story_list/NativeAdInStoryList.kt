@@ -1,6 +1,5 @@
 package com.wolfo.storycraft.presentation.features.story_list
 
-import android.widget.TextView
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
@@ -8,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.wolfo.storycraft.ads.NativeAdEventLogger
 import com.wolfo.storycraft.presentation.common.GlassCard
 import com.yandex.mobile.ads.nativeads.NativeAd
 import com.yandex.mobile.ads.nativeads.template.NativeBannerView

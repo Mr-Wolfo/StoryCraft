@@ -1,11 +1,13 @@
 package com.wolfo.storycraft.presentation.navigation
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -16,8 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
@@ -25,9 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
-import com.wolfo.storycraft.R
 import com.wolfo.storycraft.presentation.common.AuthStateViewModel
-import com.wolfo.storycraft.presentation.common.BackgroundImage
 import com.wolfo.storycraft.presentation.features.profile.ProfileScreen
 import com.wolfo.storycraft.presentation.features.profile.auth.AuthScreen
 import com.wolfo.storycraft.presentation.features.profile.login.LoginScreen
@@ -66,22 +65,18 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
 
     Scaffold(
         bottomBar = {
-            AppNavBottomBar(navController = navController, modifier = Modifier.windowInsetsPadding(
-                WindowInsets.navigationBars)) },
+            AppNavBottomBar(navController = navController,
+                modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)) },
 //        topBar = {
 //            AppTopBar(navController = navController, labelScreen.value)
 //        }
-    ) {  padding ->
+    ) { padding ->
         NavHost(navController = navController, startDestination = Screen.StoryList) {
             composable<Screen.StoryList>() {
                 StoryListScreen(
-                    padding = padding
+                    navPadding = padding
                 ) {storyId -> navController.navigate(Screen.StoryView.Details(storyId)) {
-                    popUpTo(navController.graph.findStartDestination().id) {
-                        saveState = true
-                    }
-                    launchSingleTop = true
-                    restoreState = true
+                    defaultNavOptions(navController)
                 }}
             }
             navigation<Screen.StoryView>(startDestination = Screen.StoryView.Details(null)) {
@@ -89,30 +84,19 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
                     val storyDetails = navBackStackEntry.toRoute<Screen.StoryView.Details>()
                     StoryDetailsScreen(
                         storyId = storyDetails.storyId,
+                        navPadding = padding,
                         onReadStory = { navController.navigate(route = Screen.StoryView.Reader(it) )
                         {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
+                            defaultNavOptions(navController)
                         }
                                       },
                         onNavigateToCreateStory = { navController.navigate(route = Screen.StoryEditor(null) )
                         {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
+                            defaultNavOptions(navController)
                         }},
                         onNavigateToStoryList = { navController.navigate(route = Screen.StoryList )
                         {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
+                            defaultNavOptions(navController)
                         }}
                     )
                 }
@@ -120,32 +104,21 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
                     val storyReader = navBackStackEntry.toRoute<Screen.StoryView.Reader>()
                     StoryReaderScreen(
                         storyId = storyReader.storyId,
+                        navPadding = padding,
                         onExploreStories = { navController.navigate(route = Screen.StoryList )
                         {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
+                            defaultNavOptions(navController)
                         } },
                         onCreateStory = {
                             navController.navigate(route = Screen.StoryEditor(null) )
                             {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
+                                defaultNavOptions(navController)
                             }
                         },
                         onReturnToStory = {
                             navController.navigate(route = Screen.StoryView.Details(it) )
                             {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
+                                defaultNavOptions(navController)
                             }
                         }
                     )
@@ -154,9 +127,8 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
 
             navigation<Screen.Profile>(startDestination = Screen.Profile.Profile) {
                 composable<Screen.Profile.Profile> {
-                    Log.d("NAVIGATION", "${isLoggedIn}")
                     if (isLoggedIn) {
-                        ProfileScreen(onLogout = {authStateViewModel.logout()}, onEditProfile = {})
+                        ProfileScreen(onLogout = {authStateViewModel.logout()}, navPadding = padding, onEditProfile = {})
 
                     } else {
                         LaunchedEffect(isLoggedIn) {
@@ -168,7 +140,6 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
                     }
                 }
                 composable<Screen.Profile.Auth> { navBackStackEntry ->
-                    Log.d("NAVIGATION", "Auth")
                     AuthScreen({navController.navigate(route = Screen.Profile.Login) },
                         {navController.navigate(route = Screen.Profile.Register)})
                 }
@@ -188,23 +159,24 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
                 StoryEditorScreen(storyId = storyEditor.storyId,
                     onNavigateToProfile = {navController.navigate(route = Screen.Profile )
                     {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
+                        defaultNavOptions(navController)
                     }},
+                    navPadding = padding,
                     onStoryPublished = {navController.navigate(route = Screen.StoryView.Details(it) )
                     {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
+                        defaultNavOptions(navController)
                     }})
             }
         }
     }
+}
+
+fun NavOptionsBuilder.defaultNavOptions(navController: NavController) {
+    popUpTo(navController.graph.findStartDestination().id) {
+        saveState = true
+    }
+    launchSingleTop = true
+    restoreState = true
 }
 
 data class TopLevelRoute<T : Any>(val name: String, val route: T, val icon: ImageVector)

@@ -36,7 +36,6 @@ class AuthRepositoryImpl (
             transform = { authResponse -> authResponse.user.toDomain() },
             onSuccess = { authResponse ->
                 // Сохраняем токены
-
                 val tokens = AuthTokens(
                     accessToken = authResponse.token.accessToken,
                     refreshToken = authResponse.token.refreshToken
@@ -51,7 +50,7 @@ class AuthRepositoryImpl (
                 val finalError = if (error is DataError.Network && error.code == 422) {
                     DataError.Authentication("Registration failed: ${error.message ?: "Validation error"}")
                 } else {
-                    error // Возвращаем исходную ошибку
+                    error
                 }
                 ResultM.failure(finalError)
             }
@@ -86,18 +85,11 @@ class AuthRepositoryImpl (
     }
 
     override suspend fun logout() = withContext(Dispatchers.IO) {
-        // Очищаем токены и ID пользователя
         tokenManager.clearTokens()
         tokenManager.clearUserId()
-        // Очищаем данные текущего пользователя из локальной БД
         userRepository.clearCurrentUser()
-        // Опционально: Очистить другие кэшированные данные
-        // localDataSource.clearStories()
-        // localDataSource.clearAllReviews()
-        // ...
     }
 
-    // Получение access токена (если нужно напрямую)
     override suspend fun getAccessToken(): String? = withContext(Dispatchers.IO) {
         tokenManager.getAccessToken()
     }

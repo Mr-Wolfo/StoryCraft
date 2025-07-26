@@ -40,16 +40,11 @@ interface ApiService {
     suspend fun loginUser(
         @Field("username") username: String,
         @Field("password") password: String,
-        @Field("grant_type") grantType: String? = "password", // Опционально, если API требует
+        @Field("grant_type") grantType: String? = "password",
         @Field("scope") scope: String? = "",
         @Field("client_id") clientId: String? = null,
         @Field("client_secret") clientSecret: String? = null
     ): Response<UserAuthResponseDto> // 200
-
-    // Запрос на обновление токена - используется ТОЛЬКО внутри TokenAuthenticator
-    // Не выносите его в общий доступ репозиториев
-    // @POST("api/v1/auth/refresh")
-    // suspend fun refreshAccessToken(@Body body: RefreshTokenRequestDto): Response<TokenDto> // 200
 
     // --- Users ---
 
@@ -62,7 +57,7 @@ interface ApiService {
     @Multipart
     @PUT("api/v1/users/me/avatar")
     suspend fun updateUserAvatar(
-        @Part avatarFile: MultipartBody.Part // Файл аватара
+        @Part avatarFile: MultipartBody.Part
     ): Response<UserDto> // 200 (Требует токен)
 
     @GET("api/v1/users/{user_id}/profile")
@@ -78,25 +73,23 @@ interface ApiService {
         @Query("sort_order") sortOrder: String? = null, // "asc", "desc"
         @Query("search_query") searchQuery: String? = null,
         @Query("author_username") authorUsername: String? = null,
-        // Список тегов передается как несколько параметров с одинаковым именем
         @Query("tag_names") tagNames: List<String>? = null
     ): Response<StoryListResponseDto> // 200
 
-    @Multipart // Этот эндпоинт ожидает multipart/form-data
+    @Multipart
     @POST("api/v1/stories/")
     suspend fun createStory(
-        @Part parts: List<MultipartBody.Part> // Принимаем список частей
-        // Теперь клиент (RemoteDataSourceImpl) формирует все части (@Part("story_data"), @Part("cover_image_file"), @Part("page_images"), @Part("page_image_indexes"))
+        @Part parts: List<MultipartBody.Part>
     ): Response<StoryFullDto> // 201
 
     @GET("api/v1/stories/{story_id}")
     suspend fun getStoryById(@Path("story_id") storyId: String): Response<StoryFullDto> // 200
 
-    @Multipart // Предполагаем, что обновление тоже multipart
+    @Multipart
     @PATCH("api/v1/stories/{story_id}")
     suspend fun updateStory(
         @Path("story_id") storyId: String,
-        @Part parts: List<MultipartBody.Part> // Принимаем список частей (story_data, cover_image_file)
+        @Part parts: List<MultipartBody.Part>
     ): Response<StoryFullDto> // 200
 
     @DELETE("api/v1/stories/{story_id}")
@@ -114,7 +107,6 @@ interface ApiService {
     @POST("api/v1/stories/{story_id}/reviews")
     suspend fun createReview(
         @Path("story_id") storyId: String,
-        // OpenAPI ожидает story_id в теле, хотя он есть в пути. Передаем, если API требует.
         @Body reviewCreateDto: ReviewCreateRequestDto
     ): Response<ReviewDto> // 201 (Требует токен)
 

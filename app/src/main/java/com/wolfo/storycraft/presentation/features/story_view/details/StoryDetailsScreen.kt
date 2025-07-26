@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -106,6 +107,7 @@ import java.util.Locale
 fun StoryDetailsScreen(
     storyId: String?,
     viewModel: StoryDetailsViewModel = koinViewModel(),
+    navPadding: PaddingValues,
     onReadStory: (String) -> Unit,
     onNavigateToCreateStory: () -> Unit,
     onNavigateToStoryList: () -> Unit
@@ -123,7 +125,6 @@ fun StoryDetailsScreen(
         }
     }
 
-    Log.d("SLDetails", "$storyId")
 
     when(val state = uiState) {
         is StoryDetailsUiState.Loading -> Loading()
@@ -135,7 +136,8 @@ fun StoryDetailsScreen(
             addReviewState = addReviewState,
             onReadStory = { viewModel.attemptLoadFullStory() },
             onDeleteReview = { viewModel.deleteReview(it) },
-            onCreateReview = { rating, text -> viewModel.addReview(storyId!!, rating, text) }
+            onCreateReview = { rating, text -> viewModel.addReview(storyId!!, rating, text) },
+            navPadding = navPadding
         )
         is StoryDetailsUiState.Idle -> {
             if (storyId == null) {
@@ -144,7 +146,6 @@ fun StoryDetailsScreen(
                     onCreateStory = onNavigateToCreateStory
                 )
             } else {
-                // Если storyId есть, но состояние Idle - показываем загрузку
                 Loading()
             }
         }
@@ -158,7 +159,6 @@ fun StoryDetailsScreen(
                     .fillMaxSize().background(Color.Transparent),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                println("LOAD")
                 LoadingBar(
                     isVisible = true
                 )
@@ -256,7 +256,8 @@ fun StoryDetails(
     onReadStory: (String) -> Unit,
     onDeleteReview: (String) -> Unit,
     onCreateReview: (Int, String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navPadding: PaddingValues
 ) {
     val scrollState = rememberScrollState()
     val colorScheme = MaterialTheme.colorScheme
@@ -277,7 +278,6 @@ fun StoryDetails(
         exit = fadeOut() + slideOutVertically { it / 2 }
     ) {
         Box(modifier = modifier.fillMaxSize()) {
-            // Иммерсивный фон с параллакс эффектом
             AsyncImage(
                 model = story.coverImageUrl,
                 contentDescription = null,
@@ -319,7 +319,8 @@ fun StoryDetails(
                         onClick = { onReadStory(story.id) },
                         modifier = Modifier
                             .padding(16.dp)
-                            .shadow(16.dp, shape = CircleShape),
+                            .shadow(16.dp, shape = CircleShape)
+                            .padding(bottom = navPadding.calculateBottomPadding()),
                         containerColor = colorScheme.primary,
                         contentColor = colorScheme.onPrimary
                     ) {
@@ -332,7 +333,7 @@ fun StoryDetails(
                 }
             ) { padding ->
                 CustomScrollableColumn(
-                    modifier = Modifier.fillMaxHeight().windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = 30.dp),
+                    modifier = Modifier.fillMaxHeight(),
                     scrollState = scrollState,
                     contentPadding = padding,
                     verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -484,7 +485,7 @@ fun StoryDetails(
                         ) {
                             PremiumInfoChip(
                                 icon = Icons.Filled.Menu,
-                                text = "${12} стр.",
+                                text = "${156} стр.",
                                 subText = "Объем"
                             )
 
@@ -504,6 +505,8 @@ fun StoryDetails(
                     }
 
                     StoryReviews(reviewsUiState, addReviewState, currentUserId, { onDeleteReview(it) }, { rating, text -> onCreateReview(rating, text) })
+
+                    Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars).padding(bottom = navPadding.calculateBottomPadding()))
 
                 }
             }

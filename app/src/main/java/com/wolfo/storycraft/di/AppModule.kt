@@ -8,8 +8,7 @@ import com.wolfo.storycraft.data.mapper.PublishContentToStoryCreateDtoMapper
 import com.wolfo.storycraft.data.mapper.StoryDraftEntityToDraftContentMapper
 import com.wolfo.storycraft.data.utils.NetworkHandler
 import com.wolfo.storycraft.data.utils.RepositoryHandler
-import com.wolfo.storycraft.presentation.features.story_list.NativeAdManager
-import com.yandex.mobile.ads.nativeads.NativeAdLoader
+import com.wolfo.storycraft.ads.NativeAdManager
 import org.koin.dsl.module
 
 val appModule = module {

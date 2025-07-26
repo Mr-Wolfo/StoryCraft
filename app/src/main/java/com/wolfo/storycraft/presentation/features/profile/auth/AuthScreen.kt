@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -105,7 +106,8 @@ fun AuthScreen(
                     border = BorderStroke(1.dp, colorScheme.outline),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Зарегистрироваться")
+                    Text("Зарегистрироваться",
+                        color = MaterialTheme.colorScheme.tertiaryContainer)
                 }
             }
         }

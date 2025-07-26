@@ -10,10 +10,10 @@ sealed class ListItem {
     companion object {
         fun createMixedList(
             stories: List<StoryBaseInfo>,
-            adInterval: Int = 5,
+            adInterval: Int = 4,
         ): List<ListItem> {
             return stories.flatMapIndexed { index, story ->
-                if (index >= 0 && index % adInterval == 0) {
+                if (index >= adInterval && index % adInterval == 0) {
                     listOf(StoryItem(story), AdItem())
                 } else {
                     listOf(StoryItem(story))
