@@ -52,10 +52,7 @@ interface StoryDraftDao {
 
     @Transaction
     suspend fun saveFullStoryDraft(story: StoryDraftEntity, pages: List<PageDraftEntity>, choices: List<ChoiceDraftEntity>) {
-        // Для простоты обновления, удаляем старые страницы и выборы и вставляем новые.
-        // Это не оптимально для больших историй, но проще в реализации.
-        // Более оптимально: находить измененные, добавленные, удаленные и применять точечные операции.
-        // Удаляем сначала выборы, зависящие от страниц, затем страницы
+        // TODO: Сделать более оптимальное сохранение черновиков (отслеживать конкретные изменения)
         deleteChoiceDraftsForStory(story.id)
         deletePageDraftsForStory(story.id)
 

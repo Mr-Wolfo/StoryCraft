@@ -19,24 +19,36 @@ val MainYellow = Color(0xFFFBE240)
 val MainLightGreen = Color(0xFF4ff090)
 val MainCyan = Color(0xFF0FF0EF)
 val MainBlue = Color(0xFF3498DB)
-
-val StarLight = Color(0xFFD9B000)
-val StarDark = Color(0xFFFDFD6E)
-
 val onDarkBackground = Color(0xFFCBCBCB)
 
 val BackDarkGray = Color(0xFF373737)
 val BackLightGray = Color(0xFF999999)
 
-// Основная палитра нового дизайна
-val DarkPurple = Color(0xFF1A1229)       // Глубокий темный фон
-val LightGray = Color(0xFFE0E0E0)       // Основной цвет текста (заголовки)
-val MediumGray = Color(0xFFAAAAAA)      // Второстепенный цвет текста (лейблы, подсказки)
 
-// Акцентный градиент
-val NeonYellow = Color(0xFFD8FE02)      // Начало градиента
-val NeonGreen = Color(0xFF5FF402)        // Конец градиента
+val Black = Color.Black
 
-// Цвета для компонентов
-val CardBackground = Color(0xFF2C233E)  // Фон для карточек и полей ввода
-val CardBorder = Color(0xFF4A415A)       // Обводка для карточек и полей
+// --- DARK THEME PALETTE ---
+val DarkGray = Color(0xFF232323) // Основной фон
+val Gray = Color(0xFF2F2F2F)
+
+val LightPeriwinkle = Color(0xFFFFFFFF)
+val SlateGray = Color(0xFFE0E5FC)     // Второстепенный текст
+val TextOnGradient = Color(0xFF0A051A)
+
+// --- LIGHT THEME PALETTE ---
+val LightBackground = Color(0xFFE0E0E0) // Основной фон
+val DarkLight = Color(0xFFEAEAEA)
+
+val DarkText = Color(0xFF1B1B1F)
+val MediumText = Color(0xFF2D2E34)
+val LightText = Color(0xFF757680)
+
+// --- SHARED COLORS ---
+val NeonYellow = Color(0xFFF8DA3E)
+val NeonBlue = Color(0xFF1CFBFA)
+val NeonGreen = Color(0xFF76FF93)
+
+
+// Звезды рейтинга
+val StarLight = Color(0xFFD9B000)
+val StarDark = Color(0xFFFDFD6E)

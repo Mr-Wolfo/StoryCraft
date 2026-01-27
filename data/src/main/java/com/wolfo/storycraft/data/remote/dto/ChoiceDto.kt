@@ -6,5 +6,5 @@ data class ChoiceDto(
     @SerializedName("id") val id: String, // UUID
     @SerializedName("page_id") val pageId: String,
     @SerializedName("choice_text") val choiceText: String,
-    @SerializedName("target_page_id") val targetPageId: String? // UUID следующей страницы
+    @SerializedName("target_page_id") val targetPageId: String // UUID следующей страницы
 )

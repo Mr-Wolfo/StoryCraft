@@ -27,14 +27,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.wolfo.storycraft.presentation.common.AuthStateViewModel
-import com.wolfo.storycraft.presentation.features.profile.ProfileScreen
-import com.wolfo.storycraft.presentation.features.profile.auth.AuthScreen
-import com.wolfo.storycraft.presentation.features.profile.login.LoginScreen
-import com.wolfo.storycraft.presentation.features.profile.register.RegisterScreen
-import com.wolfo.storycraft.presentation.features.story_editor.StoryEditorScreen
-import com.wolfo.storycraft.presentation.features.story_list.StoryListScreen
-import com.wolfo.storycraft.presentation.features.story_view.details.StoryDetailsScreen
-import com.wolfo.storycraft.presentation.features.story_view.reader.StoryReaderScreen
+import com.wolfo.storycraft.presentation.ui.features.profile.ProfileScreen
+import com.wolfo.storycraft.presentation.ui.features.profile.auth.AuthScreen
+import com.wolfo.storycraft.presentation.ui.features.profile.login.LoginScreen
+import com.wolfo.storycraft.presentation.ui.features.profile.register.RegisterScreen
+import com.wolfo.storycraft.presentation.ui.features.story_editor.StoryEditorScreen
+import com.wolfo.storycraft.presentation.ui.features.story_list.StoryListScreen
+import com.wolfo.storycraft.presentation.ui.features.story_view.details.StoryDetailsScreen
+import com.wolfo.storycraft.presentation.ui.features.story_view.reader.StoryReaderScreen
 import org.koin.androidx.compose.koinViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -156,7 +156,8 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
 
             composable<Screen.StoryEditor> {navBackStackEntry ->
                 val storyEditor = navBackStackEntry.toRoute<Screen.StoryEditor>()
-                StoryEditorScreen(storyId = storyEditor.storyId,
+                StoryEditorScreen(
+                    storyId = storyEditor.storyId,
                     onNavigateToProfile = {navController.navigate(route = Screen.Profile )
                     {
                         defaultNavOptions(navController)

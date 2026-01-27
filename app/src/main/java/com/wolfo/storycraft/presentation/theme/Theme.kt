@@ -18,95 +18,40 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.wolfo.storycraft.presentation.theme.LightPeriwinkle
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color.Black,
-    onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFF424242),
-    onPrimaryContainer = Color(0xFFE0E0E0),
-    inversePrimary = MainWhite,
-
-    secondary = MainWhite,
-    onSecondary = Color(0xFF000000),
-    secondaryContainer = Color(0xFFE0E0E0),
-    onSecondaryContainer = Color(0xFF212121),
-
-    tertiary = MainYellow,
-    onTertiary = Color(0xFFFFFFFF),
-    tertiaryContainer = Color(0xFF1E88E5),
-    onTertiaryContainer = Color(0xFFBBDEFB),
-
-    background = BackDarkGray,
-    onBackground = Color(0xFFE0E0E0),
-    surface = Color(0xFF121212),
-    onSurface = Color(0xFFE0E0E0),
-    surfaceVariant = Color(0xFF424242),
-    onSurfaceVariant = Color(0xFFBDBDBD),
-
-    inverseSurface = Color(0xFFE0E0E0),
-    inverseOnSurface = Color(0xFF121212),
-
-    error = Color(0xFFF44336),
-    onError = Color(0xFFFFFFFF),
-    errorContainer = Color(0xFFB71C1C),
-    onErrorContainer = Color(0xFFFFCDD2),
-
-    outline = Color(0xFF616161),
-    outlineVariant = Color(0xFF424242),
-    scrim = Color(0x99000000),
-
-    surfaceBright = Color(0xFFFFFFFF),
-    surfaceDim = Color(0xFF121212),
-    surfaceContainer = Color(0xFF1E1E1E),
-    surfaceContainerHigh = Color(0xFF2D2D2D),
-    surfaceContainerHighest = Color(0xFF424242),
-    surfaceContainerLow = Color(0xFF121212),
-    surfaceContainerLowest = Color(0xFF000000),
+    primary = Black,
+    onPrimary = DarkGray,
+    primaryContainer = DarkGray,
+    onPrimaryContainer = Gray,
+    secondary = NeonGreen,
+    onSecondary = TextOnGradient,
+    background = Black,
+    onBackground = LightPeriwinkle,
+    surface = DarkGray,
+    onSurface = LightPeriwinkle,
+    surfaceVariant = DarkGray.copy(alpha = 0.5f),
+    onSurfaceVariant = SlateGray,
+    outline = LightPeriwinkle,
+    outlineVariant = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = MainWhite,
-    onPrimary = Color(0xFF000000),
-    primaryContainer = Color(0xFFE0E0E0),
-    onPrimaryContainer = Color(0xFF212121),
-    inversePrimary = MainDark,
-
-    secondary = MainDark,
-    onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFF424242),
-    onSecondaryContainer = Color(0xFFEEEEEE),
-
-    tertiary = MainCyan,
-    onTertiary = Color(0xFF000000),
-    tertiaryContainer = Color(0xFFFFD180),
-    onTertiaryContainer = Color(0xFF311300),
-
-    background = BackLightGray,
-    onBackground = Color(0xFF1E1E1E),
-    surface = Color(0xFFFFFFFF),
-    onSurface = Color(0xFF2D2D2D),
-    surfaceVariant = Color(0xFFEEEEEE),
-    onSurfaceVariant = Color(0xFF424242),
-
-    inverseSurface = Color(0xFF1E1E1E),
-    inverseOnSurface = Color(0xFFFFFFFF),
-
-    error = Color(0xFFD32F2F),
-    onError = Color(0xFFFFFFFF),
-    errorContainer = Color(0xFFFFCDD2),
-    onErrorContainer = Color(0xFFB71C1C),
-
-    outline = Color(0xFFBDBDBD),
-    outlineVariant = Color(0xFFE0E0E0),
-    scrim = Color(0x99000000),
-
-    surfaceBright = Color(0xFFFFFFFF),
-    surfaceDim = Color(0xFFF5F5F5),
-    surfaceContainer = Color(0xFFEEEEEE),
-    surfaceContainerHigh = Color(0xFFE0E0E0),
-    surfaceContainerHighest = Color(0xFFFFFFFF),
-    surfaceContainerLow = Color(0xFFF5F5F5),
-    surfaceContainerLowest = Color(0xFFFFFFFF),
+    primary = LightPeriwinkle,
+    onPrimary = Color.White,
+    primaryContainer = Color.White,
+    onPrimaryContainer = DarkLight,
+    secondary = Color(0xFF5A5D72),
+    onSecondary = Color.White,
+    background = LightBackground,
+    onBackground = DarkText,
+    surface = Color.White,
+    onSurface = DarkText,
+    surfaceVariant = LightPeriwinkle.copy(alpha = 0.5f),
+    onSurfaceVariant = MediumText,
+    outline = Color.Black,
+    outlineVariant = Color.DarkGray
 )
 
 val MaterialTheme.extendedColors: ExtendedColors
@@ -114,8 +59,11 @@ val MaterialTheme.extendedColors: ExtendedColors
     @ReadOnlyComposable
     get() = LocalExtendedColors.current
 
+
 data class ExtendedColors(
     val star: Color,
+    val main: Color,
+    val oppositeMain: Color,
     val onDarkBackground: Color,
     val mainBlue: Color,
     val mainYellow: Color,
@@ -125,30 +73,36 @@ data class ExtendedColors(
 
 val ExtendedLightColors = ExtendedColors(
     star = StarLight,
-    onDarkBackground = onDarkBackground,
-    mainBlue = MainBlue,
-    mainYellow = MainYellow,
-    mainCyan = MainCyan,
-    mainLightGreen = MainLightGreen
+    main = LightPeriwinkle,
+    oppositeMain = DarkGray,
+    onDarkBackground = DarkText,
+    mainBlue = NeonBlue,
+    mainYellow = NeonYellow,
+    mainCyan = NeonBlue,
+    mainLightGreen = NeonGreen
 )
 
 val ExtendedDarkColors = ExtendedColors(
     star = StarDark,
-    onDarkBackground = onDarkBackground,
-    mainBlue = MainBlue,
-    mainYellow = MainYellow,
-    mainCyan = MainCyan,
-    mainLightGreen = MainLightGreen
+    main = DarkGray,
+    oppositeMain = LightPeriwinkle,
+    onDarkBackground = LightPeriwinkle,
+    mainBlue = NeonBlue,
+    mainYellow = NeonYellow,
+    mainCyan = NeonBlue,
+    mainLightGreen = NeonGreen
 )
 
 private val LocalExtendedColors = staticCompositionLocalOf {
     ExtendedColors(
         star = Color.Unspecified,
-        onDarkBackground = onDarkBackground,
-        mainBlue = MainBlue,
-        mainYellow = MainYellow,
-        mainCyan = MainCyan,
-        mainLightGreen = MainLightGreen
+        main = Color.Unspecified,
+        oppositeMain = Color.Unspecified,
+        onDarkBackground = Color.Unspecified,
+        mainBlue = Color.Unspecified,
+        mainYellow = Color.Unspecified,
+        mainCyan = Color.Unspecified,
+        mainLightGreen = Color.Unspecified
     )
 }
 
@@ -180,13 +134,16 @@ fun StoryCraftTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
+            WindowCompat.setDecorFitsSystemWindows(window, false)
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !darkTheme
         }
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography
+        typography = Typography,
+        shapes = AppShapes
     ) {
         CompositionLocalProvider(
             LocalExtendedColors provides extendedColors,

@@ -5,6 +5,7 @@ agp = "8.9.2"
 androidxDatastorePreferences = "1.1.4"
 coilCompose = "3.1.0"
 converterGson = "2.11.0"
+haze = "1.6.9"
 koinAndroid = "4.0.3"
 koinCore = "4.0.3"
 koinCompose = "4.0.3"
@@ -39,6 +40,7 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCore" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinCompose" }

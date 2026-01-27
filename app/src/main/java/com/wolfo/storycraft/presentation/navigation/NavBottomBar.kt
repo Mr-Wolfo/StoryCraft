@@ -67,7 +67,7 @@ fun AppNavBottomBar(navController: NavHostController,
         modifier = modifier
             .fillMaxWidth()
             .height(50.dp).background(Color.Transparent),
-        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
     ) {
 
 //        val animatedColor by animateColorAsState(
@@ -93,11 +93,9 @@ fun AppNavBottomBar(navController: NavHostController,
                 animationSpec = tween(durationMillis = 300)
             )
 
-
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-
                     navController.navigate(topLevelRoute.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true

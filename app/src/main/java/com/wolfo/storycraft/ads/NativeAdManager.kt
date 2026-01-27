@@ -2,7 +2,7 @@ package com.wolfo.storycraft.ads
 
 import android.content.Context
 import android.util.Log
-import com.wolfo.storycraft.presentation.common.Utils
+import com.wolfo.storycraft.presentation.ui.utils.UiUtils
 import com.yandex.mobile.ads.common.AdRequestError
 import com.yandex.mobile.ads.nativeads.NativeAd
 import com.yandex.mobile.ads.nativeads.NativeAdLoadListener
@@ -41,7 +41,7 @@ class NativeAdManager(
     }
 
     fun loadAds(count: Int = 1, onLoaded: (NativeAd) -> Unit = {}, onFailed: () -> Unit = {}) : List<NativeAd> {
-        if (!Utils.isNetworkAvailable(context)) return loadedAds
+        if (!UiUtils.isNetworkAvailable(context)) return loadedAds
 
         if (isLoading || (loadedAds.size >= count && System.currentTimeMillis() - lastAdUpdateTime < adUpdateInterval)) return loadedAds
 

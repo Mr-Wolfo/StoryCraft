@@ -38,7 +38,6 @@ class RemoteDataSourceImpl(
     }
 
     override suspend fun loginUser(username: String, password: String): NetworkResult<UserAuthResponseDto> {
-        // Здесь используем @Field параметры для FormUrlEncoded запроса
         return safeApiCall { apiService.loginUser(username = username, password = password) }
     }
 
@@ -101,17 +100,17 @@ class RemoteDataSourceImpl(
 
     override suspend fun createStory(
         storyData: StoryCreateJsonDataDto,
-        coverImageFile: File?, // Получаем File
-        pageImageFiles: List<File>, // Получаем List<File>
+        coverImageFile: File?,
+        pageImageFiles: List<File>,
         pageImageIndexes: List<String>
     ): NetworkResult<StoryFullDto> {
         // Используем try/catch для обработки возможных ошибок (хотя основные ошибки File должны быть обработаны выше в VM)
         return try {
-            // 1. Сериализуем структурированный DTO в JSON
+            // Сериализуем структурированный DTO в JSON
             val storyDataJson = gson.toJson(storyData)
             val storyDataRequestBody = storyDataJson.toRequestBody("application/json".toMediaTypeOrNull())
 
-            // 2. Подготавливаем MultipartBody.Part для файла обложки
+            // Подготавливаем MultipartBody.Part для файла обложки
             val coverImagePart: MultipartBody.Part? = coverImageFile?.let { file ->
                 val mimeType = when (file.extension.lowercase()) {
                     "jpg", "jpeg" -> "image/jpeg"
@@ -124,7 +123,7 @@ class RemoteDataSourceImpl(
                 MultipartBody.Part.createFormData("cover_image_file", file.name, requestFile)
             }
 
-            // 3. Подготавливаем MultipartBody.Part для файлов изображений страниц
+            // Подготавливаем MultipartBody.Part для файлов изображений страниц
             val pageImageParts: List<MultipartBody.Part> = pageImageFiles.map { file ->
                 val mimeType = when (file.extension.lowercase()) {
                     "jpg", "jpeg" -> "image/jpeg"
@@ -138,7 +137,7 @@ class RemoteDataSourceImpl(
                 MultipartBody.Part.createFormData("page_images", file.name, requestFile)
             }
 
-            // 4. Подготавливаем MultipartBody.Part для индексов страниц для изображений
+            // Подготавливаем MultipartBody.Part для индексов страниц для изображений
             val pageImageIndexParts: List<MultipartBody.Part> = pageImageIndexes.map { indexString ->
                 // Имя поля должно быть "page_image_indexes"
                 MultipartBody.Part.createFormData("page_image_indexes", indexString)
@@ -159,15 +158,13 @@ class RemoteDataSourceImpl(
             // Обрабатываем оставшиеся ошибки (например, сетевые, сериализации)
             NetworkResult.Exception(e) // Преобразуем исключение в NetworkResult.Exception
         }
-        // !!! Cleanup of temporary files created from Uri MUST happen in ViewModel or a scope that owns the File lifecycle !!!
-        // RemoteDataSourceImpl receives files, but shouldn't necessarily own their cleanup unless it creates them itself.
     }
 
 
     override suspend fun updateStory(
         storyId: String,
         storyData: StoryUpdateJsonDataDto?,
-        coverImageFile: File? // Получаем File
+        coverImageFile: File?
     ): NetworkResult<StoryFullDto> {
         return try {
             val storyDataRequestBody: RequestBody? = storyData?.let {
@@ -190,20 +187,16 @@ class RemoteDataSourceImpl(
             val allParts = mutableListOf<MultipartBody.Part>().apply {
                 if (storyDataRequestBody != null) add(MultipartBody.Part.createFormData("story_data", null, storyDataRequestBody))
                 if (coverImagePart != null) add(coverImagePart)
-                // TODO: Add page file parts if API supports updating pages via this PATCH
             }
 
             if (allParts.isEmpty()) {
-                // Нет данных для обновления, если API требует хотя бы одно поле, вернем ошибку
-                // Или можно вернуть успех, если API принимает пустой PATCH (хотя это редкость)
-                return NetworkResult.Error(code = 400, message = "No update data provided") // Пример ошибки BAD REQUEST
+                return NetworkResult.Error(code = 400, message = "No update data provided")
             }
 
             safeApiCall { apiService.updateStory(storyId, allParts) }
         } catch (e: Exception) {
             NetworkResult.Exception(e)
         }
-        // Cleanup of temporary files must happen in ViewModel or a scope that owns the File.
     }
 
     override suspend fun deleteStory(storyId: String): NetworkResult<Unit> {
@@ -224,8 +217,7 @@ class RemoteDataSourceImpl(
         storyId: String,
         request: ReviewCreateRequestDto
     ): NetworkResult<ReviewDto> {
-        // Добавляем storyId в тело запроса, если API этого требует (согласно OpenAPI)
-        val requestWithStoryId = request.copy(storyId = storyId) // OpenAPI схема ReviewCreate ожидает story_id
+        val requestWithStoryId = request.copy(storyId = storyId)
         return safeApiCall { apiService.createReview(storyId = storyId, reviewCreateDto = requestWithStoryId) }
     }
 
@@ -242,26 +234,6 @@ class RemoteDataSourceImpl(
 
     override suspend fun deleteReview(reviewId: String): NetworkResult<Unit> {
         return safeEmptyApiCall { apiService.deleteReview(reviewId) }
-    }
-
-    // Вспомогательная функция для преобразования Uri в File (перемещена сюда)
-    private fun uriToFile(context: Context, uri: Uri, filenamePrefix: String): File? {
-        return try {
-            // Используйте более надежный способ копирования, например, с буфером
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            // Создаем временный файл в кеше приложения
-            val tempFile = File(context.cacheDir, "$filenamePrefix${System.currentTimeMillis()}.${getFileExtension(context, uri)}")
-            tempFile.outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
-            }
-            // Устанавливаем флаг deleteOnExit, но он не гарантирован
-            tempFile.deleteOnExit()
-            inputStream.close()
-            tempFile
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
     }
 
     // Вспомогательная функция для получения расширения файла по Uri

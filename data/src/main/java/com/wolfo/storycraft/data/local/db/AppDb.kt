@@ -42,10 +42,10 @@ import com.wolfo.storycraft.data.local.db.entity.UserEntity
 
         StoryDraftEntity::class
     ],
-    version = 1, // Увеличивайте версию при изменении схемы
-    exportSchema = true // Рекомендуется для продакшена (помогает с миграциями)
+    version = 1,
+    exportSchema = true
 )
-@TypeConverters(DateConverter::class, ListConverter::class, AuthorConverter::class, UriConverter::class) // Регистрируем конвертеры
+@TypeConverters(DateConverter::class, ListConverter::class, AuthorConverter::class, UriConverter::class)
 abstract class StoryAppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
@@ -57,7 +57,6 @@ abstract class StoryAppDatabase : RoomDatabase() {
     abstract fun storyTagCrossRefDao(): StoryTagCrossRefDao
     abstract fun storyDraftDao(): StoryDraftDao
 
-    // Полезная функция для выполнения нескольких операций DAO в одной транзакции
     suspend fun <R> runInTransaction(block: suspend () -> R): R {
         return withTransaction { block() }
     }
@@ -74,8 +73,7 @@ abstract class StoryAppDatabase : RoomDatabase() {
                     StoryAppDatabase::class.java,
                     DATABASE_NAME
                 )
-                    // .fallbackToDestructiveMigration() // Легкий путь при разработке, но удаляет данные!
-                    // В продакшене нужны реальные миграции: .addMigrations(MIGRATION_1_2, ...)
+                    // .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

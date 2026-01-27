@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.wolfo.storycraft"
-        minSdk = 28
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -25,7 +25,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isShrinkResources = true
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -53,6 +54,7 @@ android {
 dependencies {
     implementation(project(path = ":data"))
     implementation(project(path = ":domain"))
+    implementation(libs.haze)
     implementation(libs.mobileads)
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.coil.compose)

@@ -29,8 +29,8 @@ interface UserRepository {
      * @param userId ID пользователя.
      * @return Flow<Result<UserSimpleDto>> Поток с результатом (может содержать кэш, потом обновленный результат).
      */
-    // TODO: Реализовать кэширование для профилей других юзеров, если нужно
-    suspend fun getUserProfile(userId: String): ResultM<UserSimple> // Пока без Flow и кэша для простоты
+    // TODO: Реализовать кэширование для профилей других юзеров
+    suspend fun getUserProfile(userId: String): ResultM<UserSimple>
 
     /**
      * Обновляет данные текущего пользователя (например, email).
@@ -48,8 +48,8 @@ interface UserRepository {
      */
     suspend fun updateCurrentUserAvatar(avatarFile: File): ResultM<User>
 
-    // Методы для AuthRepository (или используем LocalDataSource напрямую в Auth)
+    // Методы для AuthRepository
     suspend fun saveCurrentUser(user: User)
     suspend fun clearCurrentUser()
-    suspend fun getCurrentUserId(): String? // Может быть полезно
+    suspend fun getCurrentUserId(): String?
 }

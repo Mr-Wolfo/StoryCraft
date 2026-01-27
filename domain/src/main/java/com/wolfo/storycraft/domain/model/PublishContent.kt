@@ -12,7 +12,7 @@ data class PublishContent(
 ) {
     fun validateDomain(): List<String> {
         val errors = mutableListOf<String>()
-        // TODO: Implement more complex domain validation
+        // TODO: Добавить доменную валидацию
         return errors
     }
 }

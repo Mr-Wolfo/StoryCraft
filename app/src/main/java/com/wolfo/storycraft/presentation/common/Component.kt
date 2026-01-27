@@ -1,6 +1,5 @@
 package com.wolfo.storycraft.presentation.common
 
-import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -17,6 +16,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +41,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -62,36 +64,39 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.wolfo.storycraft.R
+import com.wolfo.storycraft.presentation.theme.extendedColors
 
 // Кастомная стеклянная карточка
 @Composable
 fun GlassCard(
     modifier: Modifier = Modifier,
-    containerAlpha: Float = 0.7f,
+    containerColor: Color? = null,
+    containerAlpha: Float = 1f,
+    contentAlignment: Alignment = Alignment.TopStart,
     content: @Composable () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
 
     Card(
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.cardColors(
-            containerColor = colorScheme.surface.copy(alpha = containerAlpha)
-        ),
-        border = BorderStroke(
-            1.dp,
-            colorScheme.outline.copy(alpha = 0.2f)
+            containerColor = containerColor ?: colorScheme.primaryContainer.copy(alpha = containerAlpha)
         ),
         modifier = modifier
 
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = contentAlignment
         ) {
             content()
         }
@@ -99,23 +104,22 @@ fun GlassCard(
 }
 
 @Composable
-fun TagChip(tag: String, color: Color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f)) {
+fun TagChip(tag: String) {
     Box(
         modifier = Modifier
-            .clip(MaterialTheme.shapes.small)
-            .background(Color.White.copy(alpha = 0.2f))
-            .border(
-                width = 1.dp,
-                color = Color.White.copy(alpha = 0.4f),
-                shape = MaterialTheme.shapes.small
-            )
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(4.dp))
+            .background(MaterialTheme.colorScheme.onPrimaryContainer)
+            .padding(horizontal = 6.dp, vertical = 2.dp)
     ) {
         Text(
             text = tag,
             style = MaterialTheme.typography.labelSmall.copy(
-                color = Color.White
-            )
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.extendedColors.oppositeMain
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -356,11 +360,12 @@ fun Error(e: String) {
 }
 
 @Composable
-fun ErrorBottomMessage(
+fun StatusBottomMessage(
     message: String,
     modifier: Modifier = Modifier,
     isVisible: Boolean,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit = {},
+    onExpand: () -> Unit = {}
 ) {
     AnimatedVisibility(
         visible = isVisible,
@@ -370,16 +375,21 @@ fun ErrorBottomMessage(
     ) {
         val swipeState = rememberSwipeToDismissBoxState()
 
-        SwipeToDismissBox(state = swipeState,
+        SwipeToDismissBox(
+            state = swipeState,
             backgroundContent = { }) {
             Surface(
                 modifier = Modifier
                     .padding(16.dp)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .clickable {
+                        println("Clicked on box")
+                        onExpand() },
                 shape = RoundedCornerShape(8.dp),
                 color = MaterialTheme.colorScheme.errorContainer,
                 shadowElevation = 8.dp
             ) {
+                println("Рекомпозиция статус бара")
                 Row(
                     modifier = Modifier.padding(
                         horizontal = 16.dp,
@@ -397,13 +407,23 @@ fun ErrorBottomMessage(
                         text = message,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onErrorContainer,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowUp,
+                            contentDescription = "Expand",
+                            tint = MaterialTheme.colorScheme.onErrorContainer
+                        )
                 }
             }
         }
     }
 }
+
+
 
 fun formatNumber(number: Int): String {
     return when {
