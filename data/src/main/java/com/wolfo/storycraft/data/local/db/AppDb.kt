@@ -17,11 +17,9 @@ import com.wolfo.storycraft.data.local.db.dao.UserDao
 import com.wolfo.storycraft.data.local.db.entity.ChoiceDraftEntity
 import com.wolfo.storycraft.data.local.db.entity.ChoiceEntity
 import com.wolfo.storycraft.data.local.db.entity.PageDraftEntity
-import com.wolfo.storycraft.data.local.db.entity.PageDraftWithChoices
 import com.wolfo.storycraft.data.local.db.entity.PageEntity
 import com.wolfo.storycraft.data.local.db.entity.ReviewEntity
 import com.wolfo.storycraft.data.local.db.entity.StoryDraftEntity
-import com.wolfo.storycraft.data.local.db.entity.StoryDraftWithPagesAndChoices
 import com.wolfo.storycraft.data.local.db.entity.StoryEntity
 import com.wolfo.storycraft.data.local.db.entity.StoryTagCrossRef
 import com.wolfo.storycraft.data.local.db.entity.TagEntity

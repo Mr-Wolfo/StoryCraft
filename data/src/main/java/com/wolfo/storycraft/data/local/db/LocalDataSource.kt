@@ -23,7 +23,7 @@ interface LocalDataSource {
 
     // --- User / Author ---
     suspend fun saveUser(user: UserEntity)
-    suspend fun saveUsers(users: List<UserEntity>) // Для сохранения авторов списком
+    suspend fun saveUsers(users: List<UserEntity>)
     suspend fun getUser(userId: String): UserEntity?
     fun getUserFlow(userId: String): Flow<UserEntity?>
     suspend fun clearUsers()
@@ -33,7 +33,7 @@ interface LocalDataSource {
     suspend fun getTagsByIds(tagIds: List<String>): List<TagEntity>
 
     // --- Story ---
-    suspend fun saveStoriesWithDetails(stories: List<StoryWithAuthorAndTags>) // Сохранение списка историй
+    suspend fun saveStoriesWithDetails(stories: List<StoryWithAuthorAndTags>)
     suspend fun saveFullStory(
         story: StoryEntity,
         author: UserEntity,

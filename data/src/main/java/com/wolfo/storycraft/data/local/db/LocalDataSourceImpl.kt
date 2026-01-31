@@ -24,10 +24,9 @@ import com.wolfo.storycraft.data.local.db.entity.StoryWithAuthorAndTags
 import com.wolfo.storycraft.data.local.db.entity.TagEntity
 import com.wolfo.storycraft.data.local.db.entity.UserEntity
 import kotlinx.coroutines.flow.Flow
-import kotlin.collections.forEach
 
 class LocalDataSourceImpl(
-    private val database: StoryAppDatabase, // Инжектируем БД для транзакций
+    private val database: StoryAppDatabase,
     private val userDao: UserDao,
     private val tagDao: TagDao,
     private val storyDao: StoryDao,
@@ -35,7 +34,7 @@ class LocalDataSourceImpl(
     private val pageDao: PageDao,
     private val choiceDao: ChoiceDao,
     private val reviewDao: ReviewDao,
-    private val storyTagCrossRefDao: StoryTagCrossRefDao // Или используем методы в StoryDao
+    private val storyTagCrossRefDao: StoryTagCrossRefDao
 ) : LocalDataSource {
 
     override suspend fun <R> runInTransaction(block: suspend () -> R): R {
@@ -59,12 +58,12 @@ class LocalDataSourceImpl(
         runInTransaction {
             storyDao.clearAllStories()
 
-            // 1. Сохраняем авторов (они могут дублироваться, OnConflictStrategy.REPLACE справится)
+            // 1. Сохраняем авторов (они могут дублироваться)
             val authors = stories.mapNotNull { it.author }
             if (authors.isNotEmpty()) {
                 userDao.insertOrUpdateUsers(authors)
             }
-            // 2. Сохраняем теги (OnConflictStrategy.IGNORE справится с дубликатами)
+            // 2. Сохраняем теги
             val tags = stories.flatMap { it.tags }.distinctBy { it.id }
             if (tags.isNotEmpty()) {
                 tagDao.insertTags(tags)
@@ -131,7 +130,7 @@ class LocalDataSourceImpl(
     override suspend fun getPagesWithChoices(storyId: String): List<PageWithChoices> =
         pageDao.getPagesWithChoicesForStory(storyId)
 
-    override suspend fun deleteStory(storyId: String) = storyDao.deleteStoryById(storyId) // Каскадно удалит страницы, выборы, отзывы, связи
+    override suspend fun deleteStory(storyId: String) = storyDao.deleteStoryById(storyId)
     override suspend fun clearStories() = storyDao.clearAllStories()
 
 

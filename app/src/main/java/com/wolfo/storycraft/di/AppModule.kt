@@ -1,6 +1,7 @@
 package com.wolfo.storycraft.di
 
 import com.google.gson.Gson
+import com.wolfo.storycraft.ads.NativeAdManager
 import com.wolfo.storycraft.data.local.data_store.AuthTokenManager
 import com.wolfo.storycraft.data.local.data_store.AuthTokenManagerImpl
 import com.wolfo.storycraft.data.mapper.DraftContentToStoryDraftEntityMapper
@@ -8,7 +9,6 @@ import com.wolfo.storycraft.data.mapper.PublishContentToStoryCreateDtoMapper
 import com.wolfo.storycraft.data.mapper.StoryDraftEntityToDraftContentMapper
 import com.wolfo.storycraft.data.utils.NetworkHandler
 import com.wolfo.storycraft.data.utils.RepositoryHandler
-import com.wolfo.storycraft.ads.NativeAdManager
 import org.koin.dsl.module
 
 val appModule = module {

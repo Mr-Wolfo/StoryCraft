@@ -15,7 +15,7 @@ interface PageDao {
 
     // Получение страниц с выборами для истории
     @Transaction
-    @Query("SELECT * FROM pages WHERE story_id = :storyId") // Уточните порядок, если нужно
+    @Query("SELECT * FROM pages WHERE story_id = :storyId")
     suspend fun getPagesWithChoicesForStory(storyId: String): List<PageWithChoices>
 
     @Query("DELETE FROM pages WHERE story_id = :storyId")

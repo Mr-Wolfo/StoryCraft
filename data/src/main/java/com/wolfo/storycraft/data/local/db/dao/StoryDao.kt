@@ -18,7 +18,7 @@ interface StoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdateStories(stories: List<StoryEntity>)
 
-    @Transaction // Обязательно для загрузки связей (@Relation)
+    @Transaction
     @Query("SELECT * FROM stories")
     fun getStoriesWithAuthorAndTagsStream(): Flow<List<StoryWithAuthorAndTags>>
 
@@ -32,7 +32,7 @@ interface StoryDao {
     suspend fun getStoryEntityById(storyId: String): StoryEntity?
 
     @Query("DELETE FROM stories WHERE id = :storyId")
-    suspend fun deleteStoryById(storyId: String) // Room обработает каскадное удаление связей
+    suspend fun deleteStoryById(storyId: String)
 
     @Query("DELETE FROM stories")
     suspend fun clearAllStories()

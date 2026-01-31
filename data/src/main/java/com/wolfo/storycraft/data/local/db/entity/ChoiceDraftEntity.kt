@@ -17,7 +17,7 @@ import androidx.room.PrimaryKey
 )
 data class ChoiceDraftEntity(
     @PrimaryKey
-    val id: String, // Используем клиентский ID
+    val id: String,
     val pageDraftId: String,
     val text: String,
     val targetPageIndex: Int? // Целевая страница по индексу

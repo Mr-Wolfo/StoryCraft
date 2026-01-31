@@ -1,8 +1,8 @@
 package com.wolfo.storycraft.domain.usecase.story
 
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
 import com.wolfo.storycraft.domain.model.StoryQuery
+import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
 import com.wolfo.storycraft.domain.repository.StoryRepository
 import kotlinx.coroutines.flow.Flow
 

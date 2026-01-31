@@ -17,16 +17,13 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -76,21 +73,13 @@ import com.wolfo.storycraft.R
 import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
 import com.wolfo.storycraft.domain.model.user.User
 import com.wolfo.storycraft.domain.model.user.UserSimple
-import com.wolfo.storycraft.presentation.common.BackgroundImage
 import com.wolfo.storycraft.presentation.common.CustomScrollableColumn
-import com.wolfo.storycraft.presentation.common.ErrorState
-import com.wolfo.storycraft.presentation.common.StatusBottomMessage
-import com.wolfo.storycraft.presentation.common.GlassCard
-import com.wolfo.storycraft.presentation.common.Loading
-import com.wolfo.storycraft.presentation.common.LoadingBar
 import com.wolfo.storycraft.presentation.common.PremiumInfoChip
 import com.wolfo.storycraft.presentation.common.StatusBarManager
-import com.wolfo.storycraft.presentation.common.SuccessBottomMessage
-import com.wolfo.storycraft.presentation.ui.utils.UiUtils
-import com.wolfo.storycraft.presentation.ui.features.story_list.AppStatusBarUiState
-import com.wolfo.storycraft.presentation.ui.features.story_list.PremiumBadge
 import com.wolfo.storycraft.presentation.theme.extendedColors
-import com.wolfo.storycraft.presentation.ui.features.story_editor.ErrorScreen
+import com.wolfo.storycraft.presentation.ui.components.AppCard
+import com.wolfo.storycraft.presentation.ui.components.FullScreenLoading
+import com.wolfo.storycraft.presentation.ui.utils.UiUtils
 import org.koin.androidx.compose.koinViewModel
 import java.time.Duration
 import java.time.LocalDateTime
@@ -133,7 +122,7 @@ fun ProfileScreen(
 
     when(val state = uiState) {
         is ProfileUiState.Idle -> {  }
-        is ProfileUiState.Loading -> Loading()
+        is ProfileUiState.Loading -> FullScreenLoading()
         is ProfileUiState.Error -> Error(state.error)
         is ProfileUiState.Success -> {
             Profile(
@@ -274,7 +263,7 @@ fun Profile(
                 }
             }
 
-            GlassCard(
+            AppCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(250.dp)
@@ -322,7 +311,7 @@ fun Profile(
                 }
             }
 
-            GlassCard(
+            AppCard(
                 modifier = Modifier.fillMaxWidth()
                     .clickable(
                         enabled = editMode,
@@ -372,7 +361,7 @@ fun Profile(
             val dateTime = remember { UiUtils.toLocaleDateTime(content.createdAt) }
             val activeDays = Duration.between(dateTime, LocalDateTime.now()).toDays()
 
-            GlassCard(Modifier.fillMaxWidth()) {
+            AppCard(Modifier.fillMaxWidth()) {
                 Column {
                     FlowRow(
                         modifier = Modifier
@@ -403,7 +392,7 @@ fun Profile(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            GlassCard(modifier = Modifier.heightIn(min = 0.dp, max = 350.dp)) {
+            AppCard(modifier = Modifier.heightIn(min = 0.dp, max = 350.dp)) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth().padding(5.dp),
@@ -561,11 +550,6 @@ private fun StoryByUserItem(
                             )
                         )
                     }
-                }
-
-                // Иконка премиума
-                if (false) { // is Premium?
-                    PremiumBadge(modifier = Modifier.align(Alignment.TopEnd).size(35.dp))
                 }
             }
         }

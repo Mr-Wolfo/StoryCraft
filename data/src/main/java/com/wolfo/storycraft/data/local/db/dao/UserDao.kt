@@ -21,10 +21,9 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE id = :userId LIMIT 1")
     fun getUserByIdFlow(userId: String): Flow<UserEntity?>
 
-    // Используется для получения авторов в связях, не для прямого удаления
     // @Query("DELETE FROM users WHERE id = :userId")
     // suspend fun deleteUserById(userId: String)
 
     @Query("DELETE FROM users")
-    suspend fun clearAllUsers() // Осторожно: удалит всех юзеров/авторов
+    suspend fun clearAllUsers()
 }

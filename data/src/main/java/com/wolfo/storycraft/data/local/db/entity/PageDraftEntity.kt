@@ -20,7 +20,7 @@ import androidx.room.TypeConverters
 @TypeConverters(UriConverter::class)
 data class PageDraftEntity(
     @PrimaryKey
-    val id: String, // Используем клиентский ID
+    val id: String,
     val storyDraftId: String,
     val text: String,
     val imageUri: Uri?,

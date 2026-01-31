@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.user.User
 import com.wolfo.storycraft.domain.model.auth.UserRegisterRequest
+import com.wolfo.storycraft.domain.model.user.User
 import com.wolfo.storycraft.domain.usecase.auth.LoginUserUseCase
 import com.wolfo.storycraft.domain.usecase.auth.RegisterUserUseCase
 import kotlinx.coroutines.flow.MutableStateFlow

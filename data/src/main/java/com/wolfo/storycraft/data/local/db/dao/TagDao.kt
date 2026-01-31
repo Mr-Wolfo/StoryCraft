@@ -17,7 +17,7 @@ interface TagDao {
     suspend fun getTagsByIds(tagIds: List<String>): List<TagEntity>
 
     @Query("SELECT * FROM tags WHERE name IN (:tagNames)")
-    suspend fun getTagsByNames(tagNames: List<String>): List<TagEntity> // Полезно для поиска ID по имени
+    suspend fun getTagsByNames(tagNames: List<String>): List<TagEntity>
 
     @Query("SELECT * FROM tags")
     fun getAllTagsFlow(): Flow<List<TagEntity>>

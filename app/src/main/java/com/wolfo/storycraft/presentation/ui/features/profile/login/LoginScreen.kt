@@ -31,8 +31,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.presentation.common.CustomScrollableColumn
-import com.wolfo.storycraft.presentation.common.GlassCard
 import com.wolfo.storycraft.presentation.common.ImmersiveBackground
+import com.wolfo.storycraft.presentation.ui.components.AppCard
 import com.wolfo.storycraft.presentation.ui.features.profile.auth.AuthFormViewModel
 import com.wolfo.storycraft.presentation.ui.features.profile.auth.AuthUiState
 import com.wolfo.storycraft.presentation.ui.features.profile.auth.AuthViewModel
@@ -71,7 +71,7 @@ fun LoginScreen(
                 modifier = Modifier.padding(24.dp)
             ) {
                 // Поля формы
-                GlassCard {
+                AppCard {
                     Column(modifier = Modifier.padding(20.dp)) {
                         OutlinedTextField(
                             value = formViewModel.loginName.value,

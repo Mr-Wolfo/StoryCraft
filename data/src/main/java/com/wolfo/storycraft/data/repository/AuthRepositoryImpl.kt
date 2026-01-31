@@ -8,8 +8,8 @@ import com.wolfo.storycraft.data.remote.RemoteDataSource
 import com.wolfo.storycraft.data.utils.NetworkHandler
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.user.User
 import com.wolfo.storycraft.domain.model.auth.UserRegisterRequest
+import com.wolfo.storycraft.domain.model.user.User
 import com.wolfo.storycraft.domain.repository.AuthRepository
 import com.wolfo.storycraft.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers

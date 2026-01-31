@@ -22,12 +22,12 @@ import com.wolfo.storycraft.data.utils.NetworkHandler
 import com.wolfo.storycraft.data.utils.RepositoryHandler
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.draft.DraftContent
 import com.wolfo.storycraft.domain.model.PublishContent
 import com.wolfo.storycraft.domain.model.Review
+import com.wolfo.storycraft.domain.model.StoryQuery
+import com.wolfo.storycraft.domain.model.draft.DraftContent
 import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
 import com.wolfo.storycraft.domain.model.story.StoryFull
-import com.wolfo.storycraft.domain.model.StoryQuery
 import com.wolfo.storycraft.domain.repository.StoryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -155,35 +155,31 @@ class StoryRepositoryImpl(
         try {
             // Получаем черновики из локальной БД (Draft Entity Projection)
             val draftEntities = localDataSource.getStoryBaseInfoDraftsForUser(userId)
-            // Маппим Draft Entity Projection -> Domain BaseInfo (используя StoryDraftEntityToDraftContentMapper)
             val drafts = draftEntities.map { storyDraftEntityToDraftContentMapper.mapBaseInfo(it) }
-            emit(ResultM.success(drafts)) // Успех с Domain моделями
+            emit(ResultM.success(drafts))
         } catch (e: Exception) {
-            emit(ResultM.failure(DataError.Database(e.message))) // Ошибка с Domain моделью DataError
+            emit(ResultM.failure(DataError.Database(e.message)))
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getStoryDraft(draftId: String): ResultM<DraftContent> { // Возвращаем Domain DraftContent
+    override suspend fun getStoryDraft(draftId: String): ResultM<DraftContent> {
         return withContext(Dispatchers.IO) {
             try {
-                // Получаем черновик с деталями из локальной БД (Draft Entity WithRelations)
                 val draftWithDetails = localDataSource.getStoryDraftWithDetails(draftId)
                 if (draftWithDetails != null) {
-                    // Маппим Draft Entity WithRelations -> Domain Model (DraftContent)
                     ResultM.success(storyDraftEntityToDraftContentMapper.map(draftWithDetails))
                 } else {
-                    ResultM.failure(DataError.Database("Not found")) // Ошибка с Domain моделью DataError
+                    ResultM.failure(DataError.Database("Not found"))
                 }
             } catch (e: Exception) {
-                ResultM.failure(DataError.Database(e.message)) // Ошибка с Domain моделью DataError
+                ResultM.failure(DataError.Database(e.message))
             }
         }
     }
 
-    override suspend fun saveStoryDraft(draftContent: DraftContent): ResultM<Unit> { // Принимаем Domain DraftContent
+    override suspend fun saveStoryDraft(draftContent: DraftContent): ResultM<Unit> {
         return withContext(Dispatchers.IO) {
             try {
-                // Маппим Domain Model (DraftContent) -> Draft Entities
                 val storyEntity = draftContentToStoryDraftEntityMapper.map(draftContent)
                 val pageEntities = draftContentToStoryDraftEntityMapper.mapPages(draftContent)
                 val choiceEntities = draftContentToStoryDraftEntityMapper.mapChoices(draftContent)

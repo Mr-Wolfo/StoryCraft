@@ -1,8 +1,8 @@
 package com.wolfo.storycraft.domain.repository
 
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.user.User
 import com.wolfo.storycraft.domain.model.auth.UserRegisterRequest
+import com.wolfo.storycraft.domain.model.user.User
 import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {

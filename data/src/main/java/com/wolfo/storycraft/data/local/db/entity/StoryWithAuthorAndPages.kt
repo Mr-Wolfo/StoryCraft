@@ -15,5 +15,5 @@ data class StoryWithAuthorAndPages(
         parentColumn = "id", // story.id
         entityColumn = "story_id" // page.story_id
     )
-    val pagesWithChoices: List<PageWithChoices> // Room сам соберет Page -> List<Choice>
+    val pagesWithChoices: List<PageWithChoices>
 )

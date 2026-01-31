@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
     tableName = "stories",
     foreignKeys = [
         ForeignKey(
-            entity = UserEntity::class, // Связь с автором
+            entity = UserEntity::class,
             parentColumns = ["id"],
             childColumns = ["author_id"],
             onDelete = ForeignKey.SET_NULL
@@ -19,14 +19,14 @@ import androidx.room.PrimaryKey
     indices = [Index("author_id")]
 )
 data class StoryEntity(
-    @PrimaryKey val id: String, // UUID
+    @PrimaryKey val id: String,
     val title: String,
     val description: String?,
     @ColumnInfo(name = "cover_image_url") val coverImageUrl: String?,
     @ColumnInfo(name = "average_rating") val averageRating: Float,
-    @ColumnInfo(name = "published_time") val publishedTime: String, // Храним как строку (ISO формат)
+    @ColumnInfo(name = "published_time") val publishedTime: String,
     @ColumnInfo(name = "view_count") val viewCount: Int,
-    @ColumnInfo(name = "author_id") val authorId: String?, // Внешний ключ к UserEntity
+    @ColumnInfo(name = "author_id") val authorId: String?,
 
     @ColumnInfo(name = "last_refresh") val lastRefresh: Long = System.currentTimeMillis()
     // Теги связаны через StoryTagCrossRef
