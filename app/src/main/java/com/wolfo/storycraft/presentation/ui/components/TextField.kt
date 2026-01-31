@@ -6,18 +6,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.wolfo.storycraft.presentation.theme.StoryCraftTheme
 
 @Composable
-fun StoryCraftTextField(
+fun AppTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -49,7 +46,7 @@ private fun StoryCraftTextFieldPreview() {
     val textState = remember { mutableStateOf("Текст...") }
     StoryCraftTheme {
         Column {
-            StoryCraftTextField(
+            AppTextField(
                 value = textState.value,
                 onValueChange = { textState.value = it },
                 label = "Имя пользователя"

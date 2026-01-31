@@ -23,11 +23,11 @@ class UriConverter {
 @TypeConverters(UriConverter::class)
 data class StoryDraftEntity(
     @PrimaryKey
-    val id: String, // Используем сгенерированный нами UUID как ID в Room
-    val userId: String, // ID пользователя, создавшего черновик
+    val id: String, // Используем сгенерированный UUID как ID в Room
+    val userId: String,
     val title: String,
     val description: String?,
-    val tagsJson: String, // Храним теги как строку JSON или разделенную запятыми (JSON лучше)
+    val tagsJson: String,
     val coverImageUri: Uri?,
-    val lastSavedTimestamp: Long // Для отслеживания времени автосохранения
+    val lastSavedTimestamp: Long
 )

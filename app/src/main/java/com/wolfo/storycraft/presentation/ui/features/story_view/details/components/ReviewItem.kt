@@ -4,16 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,11 +25,9 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.wolfo.storycraft.domain.model.Review
 import com.wolfo.storycraft.domain.model.user.UserSimple
-import com.wolfo.storycraft.presentation.common.GlassCard
-import com.wolfo.storycraft.presentation.theme.NeonGreen
 import com.wolfo.storycraft.presentation.theme.StoryCraftTheme
 import com.wolfo.storycraft.presentation.theme.extendedColors
-import com.wolfo.storycraft.presentation.ui.components.StoryCraftCard
+import com.wolfo.storycraft.presentation.ui.components.AppCard
 import com.wolfo.storycraft.presentation.ui.utils.UiUtils
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -49,9 +43,9 @@ fun ReviewItem(
         DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault()).format(dateTime)
     }
 
-    GlassCard(
+    AppCard(
         modifier = modifier.padding(horizontal = 5.dp),
-        containerColor = MaterialTheme.colorScheme.onPrimaryContainer
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Row(
             modifier = modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
@@ -81,13 +75,13 @@ fun ReviewItem(
                             text = review.user.username,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onBackground
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         if (isOwnReview) {
                             Text(
                                 text = "(Вы)",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.tertiary
+                                color = MaterialTheme.colorScheme.secondary
                             )
                         }
                     }

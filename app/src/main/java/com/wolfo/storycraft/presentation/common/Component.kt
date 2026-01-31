@@ -11,14 +11,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,15 +23,11 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -43,9 +36,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,74 +48,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.wolfo.storycraft.R
-import com.wolfo.storycraft.presentation.theme.extendedColors
+import com.wolfo.storycraft.presentation.theme.spacing
 
-// Кастомная стеклянная карточка
-@Composable
-fun GlassCard(
-    modifier: Modifier = Modifier,
-    containerColor: Color? = null,
-    containerAlpha: Float = 1f,
-    contentAlignment: Alignment = Alignment.TopStart,
-    content: @Composable () -> Unit
-) {
-    val colorScheme = MaterialTheme.colorScheme
-
-    Card(
-        shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(
-            containerColor = containerColor ?: colorScheme.primaryContainer.copy(alpha = containerAlpha)
-        ),
-        modifier = modifier
-
-    ) {
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = contentAlignment
-        ) {
-            content()
-        }
-    }
-}
-
-@Composable
-fun TagChip(tag: String) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(MaterialTheme.colorScheme.onPrimaryContainer)
-            .padding(horizontal = 6.dp, vertical = 2.dp)
-    ) {
-        Text(
-            text = tag,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.extendedColors.oppositeMain
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
-
-// Премиум чип с дополнительным текстом
 @Composable
 fun PremiumInfoChip(icon: ImageVector,
                     color: Color = MaterialTheme.colorScheme.tertiary,
@@ -171,8 +109,6 @@ fun PremiumInfoChip(icon: ImageVector,
     }
 }
 
-
-// Кастомная колонка с прокруткой
 @Composable
 fun CustomScrollableColumn(
     scrollState: ScrollState,
@@ -187,20 +123,6 @@ fun CustomScrollableColumn(
             .verticalScroll(scrollState)
             .padding(contentPadding),
         verticalArrangement = verticalArrangement
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun AutoPaddingBox(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    Box(
-        modifier = modifier.fillMaxSize()
-            .windowInsetsPadding(WindowInsets.statusBars)
-            .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         content()
     }
@@ -261,17 +183,6 @@ fun BackgroundImage(painter: Painter) {
 }
 
 @Composable
-fun Loading(
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
-}
-
-@Composable
 fun LoadingBar(
     isVisible: Boolean,
     modifier: Modifier = Modifier
@@ -282,8 +193,8 @@ fun LoadingBar(
         visible = isVisible
     ) {
         Surface(
-            modifier = Modifier
-                .padding(16.dp),
+            modifier = modifier
+                .padding(MaterialTheme.spacing.medium),
             color = Color.Transparent
         ) {
             val infiniteTransition = rememberInfiniteTransition()
@@ -295,10 +206,8 @@ fun LoadingBar(
                     repeatMode = RepeatMode.Restart
                 )
             )
-
-
             Icon(
-                    painter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.logo)), // тут
+                    painter = rememberVectorPainter(ImageVector.vectorResource(R.drawable.logo)),
                     modifier = Modifier.graphicsLayer() {
                         rotationY = rotation
                     }
@@ -350,12 +259,22 @@ fun SuccessBottomMessage(
 }
 
 @Composable
-fun Error(e: String) {
+fun ErrorScreen(
+    e: String?,
+    onRetry: (() -> Unit)? = null
+) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = e)
+        Text(text = e ?: "Неизвестная ошибка")
+    }
+    if (onRetry != null) {
+        Button(
+            onClick = onRetry
+        ) {
+            Text("Повторить")
+        }
     }
 }
 
@@ -380,20 +299,18 @@ fun StatusBottomMessage(
             backgroundContent = { }) {
             Surface(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(MaterialTheme.spacing.medium)
                     .fillMaxWidth()
                     .clickable {
-                        println("Clicked on box")
                         onExpand() },
-                shape = RoundedCornerShape(8.dp),
+                shape = MaterialTheme.shapes.medium,
                 color = MaterialTheme.colorScheme.errorContainer,
                 shadowElevation = 8.dp
             ) {
-                println("Рекомпозиция статус бара")
                 Row(
                     modifier = Modifier.padding(
-                        horizontal = 16.dp,
-                        vertical = 12.dp
+                        horizontal = MaterialTheme.spacing.medium,
+                        vertical = MaterialTheme.spacing.small
                     ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -402,7 +319,7 @@ fun StatusBottomMessage(
                         contentDescription = "Error",
                         tint = MaterialTheme.colorScheme.error
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                     Text(
                         text = message,
                         style = MaterialTheme.typography.bodyMedium,
@@ -411,7 +328,7 @@ fun StatusBottomMessage(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowUp,
                             contentDescription = "Expand",
@@ -422,8 +339,6 @@ fun StatusBottomMessage(
         }
     }
 }
-
-
 
 fun formatNumber(number: Int): String {
     return when {

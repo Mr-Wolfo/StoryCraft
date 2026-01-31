@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.wolfo.storycraft.ads.NativeAdManager
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
 import com.wolfo.storycraft.domain.model.StoryQuery
+import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
 import com.wolfo.storycraft.domain.usecase.story.GetStoriesStreamUseCase
 import com.yandex.mobile.ads.nativeads.NativeAd
 import kotlinx.coroutines.Job

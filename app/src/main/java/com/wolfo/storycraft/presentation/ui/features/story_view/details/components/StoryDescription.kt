@@ -17,10 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wolfo.storycraft.presentation.common.GlassCard
-import com.wolfo.storycraft.presentation.theme.extendedColors
-import com.wolfo.storycraft.presentation.ui.utils.glass
-import dev.chrisbanes.haze.HazeState
+import com.wolfo.storycraft.presentation.theme.spacing
+import com.wolfo.storycraft.presentation.ui.components.AppCard
 
 @Composable
 fun StoryDescription(
@@ -30,11 +28,11 @@ fun StoryDescription(
     var isExpanded by remember { mutableStateOf(false) }
     val canBeExpanded = description.length > 200
 
-    GlassCard {
+    AppCard {
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 20.dp)
+                .padding(horizontal = MaterialTheme.spacing.large, vertical = MaterialTheme.spacing.medium)
                 .animateContentSize()
         ) {
             Text(
@@ -50,7 +48,7 @@ fun StoryDescription(
                     onClick = { isExpanded = true },
                     modifier = Modifier.align(Alignment.End)
                 ) {
-                    Text("Читать далее...", color = MaterialTheme.extendedColors.oppositeMain)
+                    Text("Читать далее...", color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
             }
         }

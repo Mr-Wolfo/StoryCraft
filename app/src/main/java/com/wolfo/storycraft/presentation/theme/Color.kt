@@ -24,31 +24,18 @@ val onDarkBackground = Color(0xFFCBCBCB)
 val BackDarkGray = Color(0xFF373737)
 val BackLightGray = Color(0xFF999999)
 
+val DarkBackground = Color(0xFF000000)
+val DarkSurface = Color(0xFF232323)
+val DarkVariant = Color(0xFF2F2F2F)
 
-val Black = Color.Black
+val LightBackground = Color(0xFFE0E0E0)
+val LightSurface = Color(0xFFFFFFFF)
+val LightVariant = Color(0xFFEAEAEA)
 
-// --- DARK THEME PALETTE ---
-val DarkGray = Color(0xFF232323) // Основной фон
-val Gray = Color(0xFF2F2F2F)
-
-val LightPeriwinkle = Color(0xFFFFFFFF)
-val SlateGray = Color(0xFFE0E5FC)     // Второстепенный текст
-val TextOnGradient = Color(0xFF0A051A)
-
-// --- LIGHT THEME PALETTE ---
-val LightBackground = Color(0xFFE0E0E0) // Основной фон
-val DarkLight = Color(0xFFEAEAEA)
-
-val DarkText = Color(0xFF1B1B1F)
-val MediumText = Color(0xFF2D2E34)
-val LightText = Color(0xFF757680)
-
-// --- SHARED COLORS ---
-val NeonYellow = Color(0xFFF8DA3E)
-val NeonBlue = Color(0xFF1CFBFA)
 val NeonGreen = Color(0xFF76FF93)
+val NeonBlue = Color(0xFF1CFBFA)
+val NeonYellow = Color(0xFFF8DA3E)
 
-
-// Звезды рейтинга
-val StarLight = Color(0xFFD9B000)
-val StarDark = Color(0xFFFDFD6E)
+// Рейтинг
+val StarGold = Color(0xFFD9B000)
+val StarLemon = Color(0xFFFDFD6E)

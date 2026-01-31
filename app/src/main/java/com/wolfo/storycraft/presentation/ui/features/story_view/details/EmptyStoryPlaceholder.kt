@@ -19,11 +19,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.wolfo.storycraft.R
-import com.wolfo.storycraft.presentation.common.BackgroundImage
+import com.wolfo.storycraft.presentation.theme.spacing
 
 @Composable
 internal fun EmptyStoryPlaceholder(
@@ -33,7 +31,7 @@ internal fun EmptyStoryPlaceholder(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(MaterialTheme.spacing.large),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -44,7 +42,7 @@ internal fun EmptyStoryPlaceholder(
             tint = MaterialTheme.colorScheme.primary
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
 
         Text(
             text = "История не выбрана",
@@ -53,7 +51,7 @@ internal fun EmptyStoryPlaceholder(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
         Text(
             text = "Выберите историю из коллекции или создайте свою собственную",
@@ -62,22 +60,22 @@ internal fun EmptyStoryPlaceholder(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
 
         Button(
             onClick = onExploreStories,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+            shape = MaterialTheme.shapes.medium
         ) {
             Text(text = "Исследовать истории")
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
         OutlinedButton(
             onClick = onCreateStory,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
+            shape = MaterialTheme.shapes.medium
         ) {
             Text(text = "Создать свою историю")
         }

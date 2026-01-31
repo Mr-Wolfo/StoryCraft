@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,14 +16,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wolfo.storycraft.domain.model.Review
 import com.wolfo.storycraft.domain.model.user.UserSimple
-import com.wolfo.storycraft.presentation.common.GlassCard
 import com.wolfo.storycraft.presentation.theme.StoryCraftTheme
-import com.wolfo.storycraft.presentation.theme.extendedColors
-import com.wolfo.storycraft.presentation.ui.components.StoryCraftCard
+import com.wolfo.storycraft.presentation.theme.spacing
+import com.wolfo.storycraft.presentation.ui.components.AppCard
 import com.wolfo.storycraft.presentation.ui.features.story_view.details.StoryReviewsUiState
-import com.wolfo.storycraft.presentation.ui.utils.glass
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.rememberHazeState
 
 
 @Composable
@@ -33,25 +28,25 @@ fun ReviewsSection(
     currentUserId: String?,
     modifier: Modifier = Modifier
 ) {
-    GlassCard {
+    AppCard {
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(vertical = MaterialTheme.spacing.large),
+            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
         ) {
             Text(
                 text = "Отзывы",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.extendedColors.oppositeMain,
-                modifier = Modifier.padding(horizontal = 24.dp)
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.padding(horizontal = MaterialTheme.spacing.large)
             )
 
             when (reviewsState) {
                 is StoryReviewsUiState.Loading -> {
                     Box(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = MaterialTheme.spacing.medium),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -73,10 +68,10 @@ fun ReviewsSection(
                             "Отзывов пока нет. Станьте первым!",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.align(Alignment.CenterHorizontally)
-                                .padding(vertical = 16.dp)
+                                .padding(vertical = MaterialTheme.spacing.medium)
                         )
                     } else {
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraSmall)) {
                             reviews.forEach { review ->
                                 ReviewItem(
                                     review = review,

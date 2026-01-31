@@ -32,13 +32,12 @@ class SearchAndFilterViewModel : ViewModel() {
     private val _filtersVisible = MutableStateFlow(false)
     val filtersVisible = _filtersVisible.asStateFlow()
 
-    // События изменений для дебаунса
     private val _searchChanged = MutableSharedFlow<Unit>()
 
     init {
         viewModelScope.launch {
             _searchChanged
-                .debounce(500) // Дебаунс 500мс
+                .debounce(500)
                 .collect { buildQuery() }
         }
     }
@@ -72,7 +71,6 @@ class SearchAndFilterViewModel : ViewModel() {
         buildQuery()
     }
 
-    // Собираем текущий Query и отправляем в SharedFlow
     private val _currentQuery = MutableStateFlow(StoryQuery())
     val currentQuery = _currentQuery.asStateFlow()
 

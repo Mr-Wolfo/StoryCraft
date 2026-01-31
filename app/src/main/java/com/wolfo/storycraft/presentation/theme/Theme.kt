@@ -18,40 +18,34 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.wolfo.storycraft.presentation.theme.LightPeriwinkle
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Black,
-    onPrimary = DarkGray,
-    primaryContainer = DarkGray,
-    onPrimaryContainer = Gray,
-    secondary = NeonGreen,
-    onSecondary = TextOnGradient,
-    background = Black,
-    onBackground = LightPeriwinkle,
-    surface = DarkGray,
-    onSurface = LightPeriwinkle,
-    surfaceVariant = DarkGray.copy(alpha = 0.5f),
-    onSurfaceVariant = SlateGray,
-    outline = LightPeriwinkle,
-    outlineVariant = Color.White
+    primary = Color(0xFFDEA1A1),
+    onPrimary = Color.Black,
+    primaryContainer = DarkSurface,
+    onPrimaryContainer = Color.White,
+    background = DarkBackground,
+    onBackground = Color.White,
+    surface = DarkSurface,
+    onSurface = Color.White,
+    surfaceVariant = DarkVariant,
+    onSurfaceVariant = Color(0xFFE0E5FC),
+    outline = Color.White.copy(alpha = 0.5f),
+    outlineVariant = Color.White.copy(alpha = 0.1f)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = LightPeriwinkle,
+    primary = Color(0xFFB46D6D),
     onPrimary = Color.White,
-    primaryContainer = Color.White,
-    onPrimaryContainer = DarkLight,
-    secondary = Color(0xFF5A5D72),
-    onSecondary = Color.White,
+    primaryContainer = LightSurface,
+    onPrimaryContainer = Color.Black,
     background = LightBackground,
-    onBackground = DarkText,
-    surface = Color.White,
-    onSurface = DarkText,
-    surfaceVariant = LightPeriwinkle.copy(alpha = 0.5f),
-    onSurfaceVariant = MediumText,
-    outline = Color.Black,
-    outlineVariant = Color.DarkGray
+    onBackground = Color(0xFF1B1B1F),
+    surface = LightSurface,
+    onSurface = Color(0xFF1B1B1F),
+    surfaceVariant = LightVariant,
+    onSurfaceVariant = Color(0xFF757680),
+    outline = Color.Black.copy(alpha = 0.12f)
 )
 
 val MaterialTheme.extendedColors: ExtendedColors
@@ -59,50 +53,33 @@ val MaterialTheme.extendedColors: ExtendedColors
     @ReadOnlyComposable
     get() = LocalExtendedColors.current
 
-
-data class ExtendedColors(
-    val star: Color,
-    val main: Color,
-    val oppositeMain: Color,
-    val onDarkBackground: Color,
-    val mainBlue: Color,
-    val mainYellow: Color,
-    val mainCyan: Color,
-    val mainLightGreen: Color
-)
-
 val ExtendedLightColors = ExtendedColors(
-    star = StarLight,
-    main = LightPeriwinkle,
-    oppositeMain = DarkGray,
-    onDarkBackground = DarkText,
-    mainBlue = NeonBlue,
-    mainYellow = NeonYellow,
-    mainCyan = NeonBlue,
-    mainLightGreen = NeonGreen
+    star = StarLemon,
+    success = Color.Green,
+    info = Color.Green,
+    accentBlue = NeonBlue
 )
 
 val ExtendedDarkColors = ExtendedColors(
-    star = StarDark,
-    main = DarkGray,
-    oppositeMain = LightPeriwinkle,
-    onDarkBackground = LightPeriwinkle,
-    mainBlue = NeonBlue,
-    mainYellow = NeonYellow,
-    mainCyan = NeonBlue,
-    mainLightGreen = NeonGreen
+    star = StarGold,
+    success = Color.Green,
+    info = Color.Green,
+    accentBlue = NeonBlue
 )
 
-private val LocalExtendedColors = staticCompositionLocalOf {
+data class ExtendedColors(
+    val star: Color,
+    val success: Color,
+    val info: Color,
+    val accentBlue: Color
+)
+
+val LocalExtendedColors = staticCompositionLocalOf {
     ExtendedColors(
         star = Color.Unspecified,
-        main = Color.Unspecified,
-        oppositeMain = Color.Unspecified,
-        onDarkBackground = Color.Unspecified,
-        mainBlue = Color.Unspecified,
-        mainYellow = Color.Unspecified,
-        mainCyan = Color.Unspecified,
-        mainLightGreen = Color.Unspecified
+        success = Color.Unspecified,
+        info = Color.Unspecified,
+        accentBlue = Color.Unspecified
     )
 }
 
@@ -124,6 +101,7 @@ fun StoryCraftTheme(
     }
 
     val extendedColors = if (darkTheme) ExtendedDarkColors else ExtendedLightColors
+    val localSpacing = LocalSpacing
 
     val systemUiController = rememberSystemUiController()
     systemUiController.setSystemBarsColor(
@@ -147,6 +125,7 @@ fun StoryCraftTheme(
     ) {
         CompositionLocalProvider(
             LocalExtendedColors provides extendedColors,
+            LocalSpacing provides Spacing(),
             content = content
         )
     }

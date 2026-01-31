@@ -6,15 +6,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wolfo.storycraft.R
-
 import com.wolfo.storycraft.domain.DataError
 import com.wolfo.storycraft.domain.ResultM
-import com.wolfo.storycraft.domain.model.draft.DraftChoice
-import com.wolfo.storycraft.domain.model.draft.DraftContent
-import com.wolfo.storycraft.domain.model.draft.DraftPage
 import com.wolfo.storycraft.domain.model.PublishChoice
 import com.wolfo.storycraft.domain.model.PublishContent
 import com.wolfo.storycraft.domain.model.PublishPage
+import com.wolfo.storycraft.domain.model.draft.DraftChoice
+import com.wolfo.storycraft.domain.model.draft.DraftContent
+import com.wolfo.storycraft.domain.model.draft.DraftPage
 import com.wolfo.storycraft.domain.model.story.StoryBaseInfo
 import com.wolfo.storycraft.domain.usecase.story.DeleteStoryDraftUseCase
 import com.wolfo.storycraft.domain.usecase.story.GetDraftStoriesUseCase
