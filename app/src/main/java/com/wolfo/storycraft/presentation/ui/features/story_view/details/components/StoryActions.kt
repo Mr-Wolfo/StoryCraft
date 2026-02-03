@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.wolfo.storycraft.presentation.theme.StoryCraftTheme
 import com.wolfo.storycraft.presentation.theme.spacing
 import com.wolfo.storycraft.presentation.ui.components.AppCard
-import com.wolfo.storycraft.presentation.ui.components.StoryCraftButton
+import com.wolfo.storycraft.presentation.ui.components.AppButton
 
 @Composable
 fun StoryActions(
@@ -30,12 +30,13 @@ fun StoryActions(
 ) {
     AppCard {
         Row(
-            modifier = modifier.fillMaxWidth(),
+            modifier = modifier.fillMaxWidth().padding(MaterialTheme.spacing.extraSmall),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
         ) {
-            StoryCraftButton(
+            AppButton(
                 text = "Читать",
+                isPrimary = true,
                 onClick = onReadClick,
                 modifier = Modifier.weight(1f)
             )

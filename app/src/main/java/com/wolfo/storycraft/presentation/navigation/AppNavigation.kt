@@ -24,7 +24,7 @@ import androidx.navigation.navigation
 import androidx.navigation.toRoute
 import com.wolfo.storycraft.presentation.common.AuthStateViewModel
 import com.wolfo.storycraft.presentation.ui.features.profile.ProfileScreen
-import com.wolfo.storycraft.presentation.ui.features.profile.auth.AuthScreen
+import com.wolfo.storycraft.presentation.ui.features.profile.auth.AuthWelcomeScreen
 import com.wolfo.storycraft.presentation.ui.features.profile.login.LoginScreen
 import com.wolfo.storycraft.presentation.ui.features.profile.register.RegisterScreen
 import com.wolfo.storycraft.presentation.ui.features.story_editor.StoryEditorScreen
@@ -68,6 +68,7 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
 //        }
     ) { padding ->
         NavHost(navController = navController, startDestination = Screen.StoryList) {
+            // Экран списка историй
             composable<Screen.StoryList>() {
                 StoryListScreen(
                     navPadding = padding
@@ -75,7 +76,9 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
                     defaultNavOptions(navController)
                 }}
             }
+
             navigation<Screen.StoryView>(startDestination = Screen.StoryView.Details(null)) {
+                // Экран подробностей истории
                 composable<Screen.StoryView.Details> { navBackStackEntry ->
                     val storyDetails = navBackStackEntry.toRoute<Screen.StoryView.Details>()
                     StoryDetailsScreen(
@@ -96,6 +99,8 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
                         }}
                     )
                 }
+
+                // Экран прохождения истории
                 composable<Screen.StoryView.Reader> { navBackStackEntry ->
                     val storyReader = navBackStackEntry.toRoute<Screen.StoryView.Reader>()
                     StoryReaderScreen(
@@ -121,10 +126,14 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
                 }
             }
 
+            // Экран профиля
             navigation<Screen.Profile>(startDestination = Screen.Profile.Profile) {
                 composable<Screen.Profile.Profile> {
                     if (isLoggedIn) {
-                        ProfileScreen(onLogout = {authStateViewModel.logout()}, navPadding = padding, onEditProfile = {})
+                        ProfileScreen(
+                            onLogout = {authStateViewModel.logout()},
+                            navPadding = padding,
+                            onEditProfile = { })
 
                     } else {
                         LaunchedEffect(isLoggedIn) {
@@ -135,21 +144,32 @@ fun AppNavigation(authStateViewModel: AuthStateViewModel = koinViewModel())
                         Box {}
                     }
                 }
+
+                // Экран авторизации
                 composable<Screen.Profile.Auth> { navBackStackEntry ->
-                    AuthScreen({navController.navigate(route = Screen.Profile.Login) },
-                        {navController.navigate(route = Screen.Profile.Register)})
+                    AuthWelcomeScreen(
+                        navPadding = padding,
+                        onNavigateToLogin = {navController.navigate(route = Screen.Profile.Login)},
+                        onNavigateToRegister = {navController.navigate(route = Screen.Profile.Register)}
+                    )
                 }
                 composable<Screen.Profile.Register> { navBackStackEntry ->
-                    RegisterScreen(onNavigateToLogin = {navController.navigate(route = Screen.Profile.Login)},
-                        onBack = {navController.navigate(route = Screen.Profile.Auth)})
+                    RegisterScreen(
+                        navPadding = padding,
+                        onNavigateToLogin = {navController.navigate(route = Screen.Profile.Login)},
+                        onBack = {navController.navigate(route = Screen.Profile.Auth)}
+                    )
                 }
                 composable<Screen.Profile.Login> { navBackStackEntry ->
-                    LoginScreen(onNavigateToRegister = {navController.navigate(route = Screen.Profile.Register)},
-                        onBack = {navController.navigate(route = Screen.Profile.Auth)})
+                    LoginScreen(
+                        navPadding = padding,
+                        onNavigateToRegister = {navController.navigate(route = Screen.Profile.Register)},
+                        onBack = {navController.navigate(route = Screen.Profile.Auth)}
+                    )
                 }
             }
 
-
+            // Экран редактора историй
             composable<Screen.StoryEditor> {navBackStackEntry ->
                 val storyEditor = navBackStackEntry.toRoute<Screen.StoryEditor>()
                 StoryEditorScreen(

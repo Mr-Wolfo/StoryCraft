@@ -42,7 +42,6 @@ fun LastPageContent(
         verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.extraLarge),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Контент завершения
 
         StoryImage(imageUrl = page.imageUrl)
 

@@ -56,7 +56,7 @@ fun AppDialog(
         },
         confirmButton = {
             // Твоя кастомная кнопка
-            StoryCraftButton(
+            AppButton(
                 text = confirmButtonText,
                 onClick = {
                     onConfirm()

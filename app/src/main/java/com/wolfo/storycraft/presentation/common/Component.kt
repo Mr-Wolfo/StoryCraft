@@ -158,26 +158,17 @@ fun ImmersiveBackground(scrollState: ScrollState? = null) {
 }
 
 @Composable
-fun BackgroundImage(painter: Painter) {
-    Box(modifier = Modifier.fillMaxSize()) {
+fun BackgroundImage(
+    painter: Painter,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier.fillMaxSize()) {
         Image(
             painter = painter,
             contentDescription = "Background Image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxSize()
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0f to Color.Transparent,
-                        0.8f to MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
-                        1f to MaterialTheme.colorScheme.surface
-                    )
-                )
         )
     }
 }

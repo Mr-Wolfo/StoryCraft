@@ -20,7 +20,7 @@ import androidx.core.view.WindowCompat
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFDEA1A1),
+    primary = NeonGreen,
     onPrimary = Color.Black,
     primaryContainer = DarkSurface,
     onPrimaryContainer = Color.White,
@@ -35,7 +35,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFFB46D6D),
+    primary = NeonGreen,
     onPrimary = Color.White,
     primaryContainer = LightSurface,
     onPrimaryContainer = Color.Black,
@@ -44,7 +44,7 @@ private val LightColorScheme = lightColorScheme(
     surface = LightSurface,
     onSurface = Color(0xFF1B1B1F),
     surfaceVariant = LightVariant,
-    onSurfaceVariant = Color(0xFF757680),
+    onSurfaceVariant = Color(0xFF48484D),
     outline = Color.Black.copy(alpha = 0.12f)
 )
 

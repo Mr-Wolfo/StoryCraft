@@ -32,7 +32,7 @@ val LightBackground = Color(0xFFE0E0E0)
 val LightSurface = Color(0xFFFFFFFF)
 val LightVariant = Color(0xFFEAEAEA)
 
-val NeonGreen = Color(0xFF76FF93)
+val NeonGreen = Color(0xFF3EDA56)
 val NeonBlue = Color(0xFF1CFBFA)
 val NeonYellow = Color(0xFFF8DA3E)
 

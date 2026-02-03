@@ -36,6 +36,7 @@ import com.wolfo.storycraft.presentation.common.LoadingBar
 import com.wolfo.storycraft.presentation.common.StatusBottomMessage
 import com.wolfo.storycraft.presentation.theme.spacing
 import com.wolfo.storycraft.presentation.ui.components.AppCard
+import com.wolfo.storycraft.presentation.ui.components.AppTopBar
 import com.wolfo.storycraft.presentation.ui.components.FullScreenLoading
 import com.wolfo.storycraft.presentation.ui.features.story_list.AppStatusBarUiState
 import com.wolfo.storycraft.presentation.ui.features.story_view.details.components.ReviewsSection
@@ -139,28 +140,18 @@ fun StoryDetailsContent(
 ) {
     Scaffold(
         topBar = {
-            AppCard {
-                CenterAlignedTopAppBar(
-                    modifier = Modifier
-                        .statusBarsPadding()
-                        .height(45.dp),
-                    title = { },
-                    navigationIcon = {
-                        IconButton(onClick = onBackClick) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = onShareClick) {
-                            Icon(Icons.Default.Share, contentDescription = "Поделиться")
-                        }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-            }
+            AppTopBar(
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onShareClick) {
+                        Icon(Icons.Default.Share, contentDescription = "Поделиться")
+                    }
+                }
+            )
         },
     ) { paddingValues ->
 

@@ -35,7 +35,8 @@ fun AppNavBottomBar(navController: NavHostController,
     NavigationBar(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp).background(Color.Transparent),
+            .height(50.dp)
+            .background(Color.Transparent),
         containerColor = MaterialTheme.colorScheme.primaryContainer,
     ) {
 
@@ -51,14 +52,6 @@ fun AppNavBottomBar(navController: NavHostController,
 
             val iconSize by animateDpAsState(
                 targetValue = if (selected) 28.dp else 20.dp,
-                animationSpec = tween(durationMillis = 300)
-            )
-            val iconColor by animateColorAsState(
-                targetValue = if (selected) {
-                    MaterialTheme.colorScheme.tertiary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
                 animationSpec = tween(durationMillis = 300)
             )
 
@@ -78,14 +71,13 @@ fun AppNavBottomBar(navController: NavHostController,
                         Icon(
                             imageVector = topLevelRoute.icon,
                             contentDescription = topLevelRoute.name,
-                            modifier = Modifier.size(iconSize),
-                            tint = iconColor
+                            modifier = Modifier.size(iconSize)
                         )
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
                     indicatorColor = Color.Transparent,
-                    selectedIconColor = Color.Unspecified,
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
                     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )

@@ -52,6 +52,7 @@ import com.wolfo.storycraft.domain.model.story.StoryFull
 import com.wolfo.storycraft.presentation.common.ErrorScreen
 import com.wolfo.storycraft.presentation.theme.spacing
 import com.wolfo.storycraft.presentation.ui.components.AppCard
+import com.wolfo.storycraft.presentation.ui.components.AppTopBar
 import com.wolfo.storycraft.presentation.ui.components.FullScreenLoading
 import com.wolfo.storycraft.presentation.ui.features.story_view.details.components.ImageBackgroundScreen
 import com.wolfo.storycraft.presentation.ui.features.story_view.details.components.StoryImage
@@ -131,40 +132,31 @@ private fun StoryReaderContent(
 
     Scaffold(
         topBar = {
-            AppCard {
-                CenterAlignedTopAppBar(
-                    modifier = Modifier
-                        .statusBarsPadding()
-                        .height(45.dp),
-                    title = {
-                        Text(
-                            text = "Страница №${currentPageIndex + 1}",
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                lineHeight = 28.sp,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            modifier = Modifier.fillMaxWidth().padding(MaterialTheme.spacing.small)
-                        )
-                    },
-                    navigationIcon = {
-                        Row {
-                            if (canGoBack) {
-                                IconButton(onClick = onBackPressed) {
-                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                                }
-                            }
-                            IconButton(onClick = onReturnToStory) {
-                                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Назад к истории")
+            AppTopBar(
+                title = {
+                    Text(
+                        text = "Страница №${currentPageIndex + 1}",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            lineHeight = 28.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        modifier = Modifier.fillMaxWidth().padding(MaterialTheme.spacing.small)
+                    )
+                },
+                navigationIcon = {
+                    Row {
+                        if (canGoBack) {
+                            IconButton(onClick = onBackPressed) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                             }
                         }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-            }
+                        IconButton(onClick = onReturnToStory) {
+                            Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Назад к истории")
+                        }
+                    }
+                },
+            )
         },
     ) { paddingValues ->
 

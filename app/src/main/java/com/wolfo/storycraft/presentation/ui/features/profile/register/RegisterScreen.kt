@@ -2,6 +2,7 @@ package com.wolfo.storycraft.presentation.ui.features.profile.register
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,6 +42,7 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
+    navPadding: PaddingValues,
     viewModel: AuthViewModel = koinViewModel<AuthViewModel>(),
     formViewModel: AuthFormViewModel = koinViewModel<AuthFormViewModel>(),
     onNavigateToLogin: () -> Unit,
